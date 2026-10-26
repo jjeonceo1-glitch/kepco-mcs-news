@@ -2,8 +2,8 @@ name: KEPCO-MCS News Bot
 
 on:
   schedule:
-    # 한국 시간 오전 8시 ~ 오후 7시 사이, 10분 간격 (UTC 기준 밤 11시 ~ 오전 10시)
-    - cron: '*/10 23,0-9 * * *'
+    # 💡 요일 제한(1-5)을 없애고 매일(*) 24시간 동안 10분 간격으로 실행
+    - cron: '*/10 * * * *'
   workflow_dispatch: # 웹에서 수동으로 즉시 실행할 수 있는 버튼 활성화
 
 # 💡 [핵심 추가] 깃허브 서버가 파일 변경사항을 저장(Commit)할 수 있도록 쓰기 권한 부여
@@ -37,5 +37,5 @@ jobs:
       - name: 💾 엑셀 대장 및 중복 방지 파일 자동 저장 (Git Commit)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 자동 뉴스 수집 결과 및 엑셀 대장 업데이트"
+          commit_message: "🤖 365일 연중무휴 10분 간격 자동 뉴스 수집 결과 업데이트"
           file_pattern: "*.txt *.xlsx"
