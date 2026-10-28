@@ -198,14 +198,20 @@ def send_telegram_alert(article, sentiment):
     title = article["title"]
     summary = article["summary"]
     link = article["link"]
-    icon = "🟢" if "네이버" in portal else "🔵"
+    
+    # 💡 논조(sentiment)에 따른 아이콘 및 헤더 설정
+    if "긍정" in sentiment:
+        status_header = "🟢 긍정 (우호적 보도)"
+    elif "부정" in sentiment:
+        status_header = "🔴 부정 (이슈점검)"
+    else:
+        status_header = "🔵 중립 (스트레이트)"
     
     message = (
-        f"🚨 <b>[{icon} {portal}] {KEYWORD} 신규 기사</b>\n"
+        f"🚨 <b>[{status_header}] {KEYWORD} 뉴스 알림</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
-        f"🏢 <b>매체 및 시간:</b> {press} ({pub_date})\n"
         f"📰 <b>제목:</b> <a href='{link}'>{title}</a>\n"
-        f"📊 <b>자동 분류:</b> {sentiment}\n\n"
+        f"🏢 <b>매체 및 시간:</b> {press} ({pub_date}) | {portal}\n\n"
         f"💡 <b>핵심 내용 요약:</b>\n{summary}\n\n"
         f"🔗 <a href='{link}'>👉 기사 원문 바로가기 (클릭)</a>"
     )
