@@ -127,7 +127,7 @@ def fetch_daum_news(keyword):
 
 def analyze_sentiment(title, summary):
     positive_words = ["혁신", "성공", "표창", "수상", "협약", "봉사", "기부", "나눔", "강화", "개선", "최우수", "선도", "확대", "호평"]
-    negative_words = ["논란", "사고", "비판", "갈등", "파업", "적자", "우려", "지적", "처벌", "위반", "고발", "중단"]
+    negative_words = ["논란", "사고", "비판", "갈등", "파업", "적자", "우려", "지적", "처벌", "위반", "고발", "중단", "단독", "재해", "부실", "해고", "해이"]
     combined = title + " " + summary
     pos_score = sum(1 for w in positive_words if w in combined)
     neg_score = sum(1 for w in negative_words if w in combined)
