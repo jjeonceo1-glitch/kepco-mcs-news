@@ -20,10 +20,39 @@ import pytz
 # 0. 앱 기본 화면 설정 (가장 먼저 실행되어야 함)
 # ==========================================
 st.set_page_config(
-    page_title="한전MCS 위험성 평가 AI",
+    page_title="한전MCS 현장 위험성 평가 AI",
     page_icon="⚡",
-    layout="centered" # "wide"로 변경하면 화면을 더 넓게 씁니다.
+    layout="centered" 
 )
+
+# --- 전문 웹앱 느낌을 위한 커스텀 CSS 디자인 적용 ---
+st.markdown("""
+<style>
+    /* 1. 우측 상단 기본 메뉴 및 하단 워터마크 숨기기 (독립된 앱처럼 보이게 함) */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* 2. 버튼 디자인 고급화 (둥근 모서리, 그림자 효과) */
+    div.stButton > button:first-child {
+        border-radius: 8px;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:first-child:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* 3. 섹션 나누는 가로줄(Divider) 색상 연하게 조정 */
+    hr {
+        margin-top: 1.5em;
+        margin-bottom: 1.5em;
+        border-color: #E0E6ED;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- 표 서식(음영 및 정렬) 자동화 함수 ---
 def apply_cell_shading(cell, color="D9D9D9"):
