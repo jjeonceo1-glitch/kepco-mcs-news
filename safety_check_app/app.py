@@ -44,7 +44,7 @@ def format_table(table, is_header_top=True):
             apply_cell_shading(cell, "D9D9D9")
 
 # API 키 및 모델 설정
-API_KEY = "API_KEY = st.secrets["GEMINI_API_KEY"]"
+API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-3.8-flash")
 
