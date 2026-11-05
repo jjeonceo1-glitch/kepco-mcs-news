@@ -1,0 +1,9 @@
+google-generativeai
+streamlit
+pillow
+pandas
+openpyxl
+streamlit-geolocation
+geopy
+pytz
+python-docx
