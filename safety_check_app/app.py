@@ -204,13 +204,32 @@ if uploaded_file is not None:
                     
                     # --- Word 문서 조립 ---
                     doc = Document()
+                
+                    # 1. 페이지 여백 설정 (공공기관 보고서 기본 여백: 상하 15mm, 좌우 20mm)
+                    for section in doc.sections:
+                        section.top_margin = Mm(15)
+                        section.bottom_margin = Mm(15)
+                        section.left_margin = Mm(20)
+                        section.right_margin = Mm(20)
+                
+                    # 2. 기본 폰트 완벽 적용 (한글 깨짐 방지 및 맑은 고딕 강제 세팅)
                     style = doc.styles['Normal']
-                    style.font.name = 'Malgun Gothic'
-                    style.font.size = Pt(10)
-                    
-                    title = doc.add_heading('위험성평가', 0)
+                    style.font.name = '맑은 고딕'
+                    style._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
+                    style.font.size = Pt(11) # 가독성을 위해 기존 10pt에서 11pt로 확대
+                
+                    # 3. 메인 타이틀 디자인 고급화
+                    title = doc.add_heading('현장 위험성 평가표', 0)
                     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    doc.add_paragraph('사업장 위험성평가에 관한 지침(고용노동부고시 제2024-76호)의 절차를 따름').alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    title_run = title.runs[0]
+                    title_run.font.name = '맑은 고딕'
+                    title_run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
+                    title_run.font.bold = True
+                    title_run.font.color.rgb = None # 파란색 띠는 기본 제목 색을 검정으로 강제 변경
+                
+                    # 부제목 서식
+                    subtitle = doc.add_paragraph('사업장 위험성평가에 관한 지침(고용노동부고시 제2024-76호)의 절차를 따름')
+                    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     
                     # 1. 헤더 테이블
                     table1 = doc.add_table(rows=4, cols=4)
