@@ -1,0 +1,15 @@
+[theme]
+# 한전MCS 메인 컬러(블루)를 포인트 컬러로 지정
+primaryColor = "#0054A6"
+
+# 앱 배경색 (아주 옅은 회색으로 웹 서비스 느낌 부여)
+backgroundColor = "#F4F6F9"
+
+# 사이드바 및 입력창 배경색 (순백색으로 분리감 부여)
+secondaryBackgroundColor = "#FFFFFF"
+
+# 글자색 (완전 검정보다 부드러운 진회색)
+textColor = "#2C3E50"
+
+# 기본 폰트 설정
+font = "sans serif"
