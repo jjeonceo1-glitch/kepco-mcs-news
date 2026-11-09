@@ -177,7 +177,7 @@ with st.sidebar:
     try:
         st.image("logo.png", use_container_width=True)
     except Exception:
-        st.title("⚡ 한전MCS 안전보건") # 로고 파일이 없을 때를 대비한 예비 텍스트
+        st.title("한전MCS 안전재난부") # 로고 파일이 없을 때를 대비한 예비 텍스트
         
     st.divider() # 가로줄 추가
     st.header("📌 사용 방법")
