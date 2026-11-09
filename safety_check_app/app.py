@@ -173,7 +173,7 @@ with col1:
     
 with col2:
     # 이모지를 뺀 깔끔한 텍스트 
-    st.title("한전MCS 위험성평가 AI")
+    st.title("위험성평가 AI")
 st.markdown("고용노동부고시 제2024-76호 지침에 따른 **사진 순회점검 기반 상시 위험성평가**를 지원합니다.")
 st.divider()
 
