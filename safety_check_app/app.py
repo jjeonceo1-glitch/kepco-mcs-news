@@ -182,15 +182,15 @@ logo_img = Image.open("safety_check_app/logo.png")
 st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=logo_img)
 
 # 2. 본문 제목 영역 디자인 (화면을 1 : 8 비율로 나누기)
-col1, col2 = st.columns([1, 8])
+# vertical_alignment="center"를 통해 박스들의 세로 중앙을 맞춥니다.
+col1, col2 = st.columns([1, 8], vertical_alignment="center")
 
 with col1:
-    # width 값을 조절해서 로고 크기를 키우거나 줄일 수 있습니다.
-    st.image(logo_img, width=60)
+    st.image(logo_img, width=65) # 필요에 따라 60~70 사이로 조절하세요.
     
 with col2:
-    # 이모지를 뺀 깔끔한 텍스트 
-    st.title("한전MCS 위험성평가 AI")
+    # st.title 대신 HTML을 사용하여 텍스트 윗부분의 쓸데없는 여백을 완전히 없앱니다.
+    st.markdown('<h1 style="margin-top: -15px; margin-bottom: 0px;">한전MCS 위험성평가 AI</h1>', unsafe_allow_html=True)
 st.markdown("고용노동부고시 제2024-76호 지침에 따른 **사진 순회점검 기반 상시 위험성평가**를 지원합니다.")
 st.divider()
 
