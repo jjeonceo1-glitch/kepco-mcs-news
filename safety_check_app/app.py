@@ -131,7 +131,7 @@ if check_password():
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
         # 안정적인 1.5-flash 모델로 설정 (오타 수정)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-3.8-flash")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
