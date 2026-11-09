@@ -117,7 +117,9 @@ if check_password():
         st.divider()
         st.header("📌 사용 방법")
         st.markdown("**1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현장 주소를 불러옵니다.  \n**2단계:** 점검할 현장의 사진을 1장 업로드합니다.  \n**3단계:** [평가표 작성 시작] 버튼을 누릅니다.  \n**4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드합니다.")
-
+        st.divider()
+        st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
+        st.caption("© 2027 한전MCS.All rights reserved.")
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode()
@@ -130,7 +132,8 @@ if check_password():
     except Exception:
         st.title("위험성평가 AI")
 
-    st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
+    st.markdown("고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
+    st.markdown("본 AI 기반 위험성평가는 근로자의 안전을 위한 프로그램이며, 관리자가 직접 2차 확인 해야합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
