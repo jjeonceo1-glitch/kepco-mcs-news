@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw, ImageFont
 from docx import Document
 from docx.shared import Pt, Mm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -192,7 +192,8 @@ if check_password():
                           "type": "재해형태",
                           "current_measure": "현재 조치",
                           "level": "상, 중, 하 중 택 1",
-                          "countermeasure": "감소대책"
+                          "countermeasure": "감소대책",
+                          "location": {"x": 50, "y": 50} // ★ 추가됨: 사진 상의 위치 (x: 가로 백분율 0~100, y: 세로 백분율 0~100)
                         }
                       ],
                       "tbm": ["작업 전 공유(TBM) 사항 1", "작업 전 공유(TBM) 사항 2"]
@@ -252,7 +253,7 @@ if check_password():
                         doc.add_paragraph()
                         
                         # --- 2. 절차 ---
-                        doc.add_heading('1. 절차', level=2)
+                        doc.add_heading('1. 사업장 위험성 평가 절차', level=2)
                         table2 = doc.add_table(rows=7, cols=3)
                         table2.style = 'Table Grid'
                         hdr2 = table2.rows[0].cells
@@ -266,8 +267,8 @@ if check_password():
                         format_table(table2)
                         doc.add_paragraph("※ 매월 1회 이상 위험개소 순회점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
                         
-                        # --- 3. 법이 정한 의무 ---
-                        doc.add_heading('2. 법이 정한 의무', level=2)
+                        # --- 3. 법적 의무 ---
+                        doc.add_heading('2. 법적 의무', level=2)
                         table3 = doc.add_table(rows=4, cols=4)
                         table3.style = 'Table Grid'
                         hdr3 = table3.rows[0].cells
@@ -279,7 +280,7 @@ if check_password():
                         doc.add_paragraph("※ 과태료 시행 : 상시 50명 이상(건설업은 공사 금액 50억원 이상) 2027년 1월 1일 시행(산업안전보건법 부칙 제1조). 중대재해로 이어질 수 있는 위험은 작업 전 안전점검회의(TBM) 등을 통해 상시 알리도록 노력해야 합니다(제36조 제4항 후단).")
                         
                         # --- 4. 위험성 수준 기준 ---
-                        doc.add_heading('3. 위험성 수준 기준(AI 판독)', level=2)
+                        doc.add_heading('3. 위험성 수준 기준(AI 판독 기준)', level=2)
                         table4 = doc.add_table(rows=6, cols=4)
                         table4.style = 'Table Grid'
                         hdr4 = table4.rows[0].cells
@@ -294,15 +295,57 @@ if check_password():
                         table4.cell(4,1).text = c_data.get("legal_basis", "")
                         table4.cell(4,1).merge(table4.cell(4,3))
                         
-                        table4.cell(5,0).text = '위 판독 기준으로 정함.     근로자              (서명)'
+                        table4.cell(5,0).text = '위 판독 기준으로 정함.     근로자                (서명)'
                         table4.cell(5,0).merge(table4.cell(5,3))
                         
                         format_table(table4)
                         apply_cell_shading(table4.cell(5, 0), "D9D9D9")
                         doc.add_page_break()
+
+                        # --- 4-1. 참고 사진 (위험요인 좌표 시각화) ---
+                        doc.add_heading('4-1. 참고 사진', level=2)
+                        doc.add_paragraph("※ 사진에 표시된 붉은색 원과 번호는 위 '위험성 평가표'의 번호와 일치합니다.")
+
+                        # 원본 이미지 복사 및 크기 조절 (문서 용량 최적화를 위해 800px로 축소)
+                        annotated_img = image.copy().convert("RGB")
+                        annotated_img.thumbnail((800, 800))
+                        draw = ImageDraw.Draw(annotated_img)
+                        img_w, img_h = annotated_img.size
+                        r = 25 # 빨간색 동그라미 반지름
+
+                        for item in hazards:
+                            no_str = str(item.get("no", ""))
+                            loc = item.get("location", {})
+    
+                            try:
+                                x_pct = float(loc.get("x", 50))
+                                y_pct = float(loc.get("y", 50))
+                            except:
+                                x_pct, y_pct = 50, 50 # 좌표 획득 실패 시 중앙으로 표시
+    
+                            # 백분율을 실제 픽셀 좌표로 변환
+                            cx = (x_pct * img_w) / 100
+                            cy = (y_pct * img_h) / 100
+    
+                            # 1. 붉은색 굵은 원 그리기
+                            draw.ellipse([cx-r, cy-r, cx+r, cy+r], outline="red", width=4)
+                            # 2. 번호 배경용 작은 붉은 사각형 (시인성 확보)
+                            draw.rectangle([cx-9, cy-9, cx+9, cy+9], fill="red")
+                            # 3. 텍스트(번호) 표시 (가운데 정렬)
+                            draw.text((cx-4, cy-6), no_str, fill="white")
+    
+                        # 그려진 이미지를 워드 파일에 넣기 위해 버퍼에 임시 저장
+                        img_buffer = io.BytesIO()
+                        annotated_img.save(img_buffer, format="JPEG", quality=85)
+                        img_buffer.seek(0)
+
+                        # 워드 문서에 사진 삽입 및 가운데 정렬
+                        img_para = doc.add_paragraph()
+                        img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        img_para.add_run().add_picture(img_buffer, width=Mm(150)) # 여백에 맞게 너비 150mm 고정
                         
                         # --- 5. 위험성 평가표 ---
-                        doc.add_heading('4. 위험성 평가표', level=2)
+                        doc.add_heading('4. 위험성 평가표(AI 분석)', level=2)
                         table5 = doc.add_table(rows=1, cols=7)
                         table5.style = 'Table Grid'
                         hdr5 = table5.rows[0].cells
@@ -316,7 +359,7 @@ if check_password():
                             row[3].text = item.get("current_measure", "")
                             row[4].text = item.get("level", "")
                             row[5].text = item.get("countermeasure", "")
-                            row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
+                            row[6].text = '담당자\n\n완료일\n\n년  월  일\n   (서명)'
                         format_table(table5)
                         
                         # --- 6. 안전점검회의(TBM) 공유 ---
