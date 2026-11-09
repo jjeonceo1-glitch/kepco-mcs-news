@@ -327,4 +327,8 @@ if check_password():
                             row = table5.add_row().cells
                             row[0].text = str(item.get("no", ""))
                             row[1].text = item.get("factor", "")
-                            row[2].text = item.get("type
+                            row[2].text = item.get("type", "")
+                            row[3].text = item.get("current_measure", "")
+                            row[4].text = item.get("level", "")
+                            row[5].text = item.get("countermeasure", "")
+                            row[6].text = '담당자\n\n완료일\n\n(서명)'
