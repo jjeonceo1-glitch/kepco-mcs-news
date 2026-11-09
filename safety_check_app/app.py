@@ -133,7 +133,7 @@ if check_password():
         st.title("AI 위험성평가")
 
     st.markdown("■ 고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 프로그램이며, 관리자가 직접 2차 확인해야 합니다.")
+    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 관리자가 직접 재확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
@@ -280,7 +280,7 @@ if check_password():
                         doc.add_paragraph("※ 과태료 시행 : 상시 50명 이상(건설업은 공사 금액 50억원 이상) 2027년 1월 1일 시행(산업안전보건법 부칙 제1조). 중대재해로 이어질 수 있는 위험은 작업 전 안전점검회의(TBM) 등을 통해 상시 알리도록 노력해야 합니다(제36조 제4항 후단).")
                         
                         # --- 4. 위험성 수준 기준 ---
-                        doc.add_heading('3. 위험성 수준 기준(AI 판독 기준)', level=2)
+                        doc.add_heading('3. 위험성 수준 기준(AI 기준)', level=2)
                         table4 = doc.add_table(rows=6, cols=4)
                         table4.style = 'Table Grid'
                         hdr4 = table4.rows[0].cells
@@ -302,8 +302,8 @@ if check_password():
                         apply_cell_shading(table4.cell(5, 0), "D9D9D9")
                         doc.add_page_break()
 
-                        # --- 4-1. 참고 사진 (위험요인 좌표 시각화) ---
-                        doc.add_heading('4-1. 참고 사진', level=2)
+                        # --- 4. 참고 사진 (위험요인 좌표 시각화) ---
+                        doc.add_heading('4. AI 판독', level=2)
                         doc.add_paragraph("※ 사진에 표시된 붉은색 원과 번호는 위 '위험성 평가표'의 번호와 일치합니다.")
 
                         # 원본 이미지 복사 및 크기 조절 (문서 용량 최적화를 위해 800px로 축소)
@@ -344,8 +344,8 @@ if check_password():
                         img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
                         img_para.add_run().add_picture(img_buffer, width=Mm(150)) # 여백에 맞게 너비 150mm 고정
                         
-                        # --- 5. 위험성 평가표 ---
-                        doc.add_heading('4. 위험성 평가표(AI 분석)', level=2)
+                        # --- 4-1. 위험성 평가표 ---
+                        doc.add_heading('4-1. 위험성 평가표(AI 분석)', level=2)
                         table5 = doc.add_table(rows=1, cols=7)
                         table5.style = 'Table Grid'
                         hdr5 = table5.rows[0].cells
@@ -359,7 +359,7 @@ if check_password():
                             row[3].text = item.get("current_measure", "")
                             row[4].text = item.get("level", "")
                             row[5].text = item.get("countermeasure", "")
-                            row[6].text = '담당자\n\n완료일\n\n년  월  일\n   (서명)'
+                            row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
                         format_table(table5)
                         
                         # --- 6. 안전점검회의(TBM) 공유 ---
