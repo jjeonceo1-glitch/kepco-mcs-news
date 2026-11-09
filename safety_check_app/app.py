@@ -156,8 +156,8 @@ if check_password():
     st.divider()
 
     st.subheader("📸 2단계: 현장 사진 업로드")
-    st.info("작업 현장 사진을 촬영하거나 사진을 업로드해 주세요.")
-    uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
+    st.info("위험장소를 촬영하거나 사진을 업로드해 주세요.")
+    uploaded_file = st.file_uploader(type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
