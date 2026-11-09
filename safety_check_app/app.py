@@ -18,7 +18,6 @@ import pytz
 
 import streamlit as st
 from PIL import Image, ImageOps
-import base64
 
 # 1. 탭 아이콘용 (반드시 1:1 정사각형 이미지 파일 사용)
 icon_img = Image.open("safety_check_app/app_icon.png")
