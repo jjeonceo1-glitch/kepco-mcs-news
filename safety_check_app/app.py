@@ -1,6 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
-from PIL import Image
+from PIL import Image, ImageOps
 from docx import Document
 from docx.shared import Pt, Mm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -224,6 +224,17 @@ st.subheader("2. 현장 사진 업로드")
 uploaded_file = st.file_uploader("작업 현장 사진을 선택하거나 촬영해 주세요.", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
+    # 원본 이미지 열기
+    image = Image.open(uploaded_file)
+
+    # ★ 스마트폰 회전 방향(EXIF)을 읽어 올바른 세로/가로 방향으로 원상 복구 ★
+    image = ImageOps.exif_transpose(image)
+
+    # 화면에 표시하기
+    st.image(image, caption="업로드된 현장 사진", use_container_width=True)
+
+    # (이하 AI 분석 버튼 및 제미나이 작동 코드는 그대로 유지)
+    
     # 화면을 두 칸(좌/우)으로 나누어 보기 좋게 배치
     col1, col2 = st.columns([1, 1])
     
