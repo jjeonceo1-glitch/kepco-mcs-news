@@ -195,7 +195,7 @@ st.markdown(f"""
         <img src="data:image/png;base64,{logo_base64}" width="60">
         <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">위험성평가 AI</h1>
     </div>
-    <p style="margin-top: 5px; font-size: 16px; color: #555;">고용노동부고시 제2024-76호 지침에 따른 위험성평가를 지원합니다.</p>
+    <p style="margin-top: 5px; font-size: 16px; color: #555;">본 AI기반 위험성평가는 참고자료이며 관리자가 필히 재확인 해야합니다.</p>
 """, unsafe_allow_html=True)
 st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
 st.divider()
