@@ -96,7 +96,7 @@ if check_password():
 # 0. 앱 기본 화면 설정 (가장 먼저 실행되어야 함)
 # ==========================================
 st.set_page_config(
-    page_title="한전MCS 현장 위험성 평가 AI",
+    page_title="한전MCS 위험성평가 AI",
     page_icon="⚡",
     layout="centered" 
 )
