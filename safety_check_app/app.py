@@ -177,7 +177,7 @@ if check_password():
 
 # --- GPS 위치 수집 ---
 st.subheader("📍 1단계: 현장 위치 수집")
-    st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
+st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
     
     # 위치 수집 모듈 실행 (버튼 생성)
     location = streamlit_geolocation()
