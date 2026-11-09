@@ -179,19 +179,25 @@ from PIL import Image
 # 1. 브라우저 상단 탭 아이콘 변경 (선택사항)
 # 기존에 st.set_page_config가 있다면 page_icon 부분을 아래처럼 수정하세요.
 logo_img = Image.open("safety_check_app/logo.png")
-st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=logo_img)
+st.set_page_config(page_title="위험성평가 AI", page_icon=logo_img)
 
 # 2. 본문 제목 영역 디자인 (화면을 1 : 8 비율로 나누기)
 # vertical_alignment="center"를 통해 박스들의 세로 중앙을 맞춥니다.
-col1, col2 = st.columns([1, 8], vertical_alignment="center")
+import base64
 
-with col1:
-    st.image(logo_img, width=65) # 필요에 따라 60~70 사이로 조절하세요.
-    
-with col2:
-    # st.title 대신 HTML을 사용하여 텍스트 윗부분의 쓸데없는 여백을 완전히 없앱니다.
-    st.markdown('<h1 style="margin-top: -15px; margin-bottom: 0px;">한전MCS 위험성평가 AI</h1>', unsafe_allow_html=True)
-st.markdown("고용노동부고시 제2024-76호 지침에 따른 **사진 순회점검 기반 상시 위험성평가**를 지원합니다.")
+# 1. 로고 파일을 읽어서 HTML이 이해할 수 있는 코드로 변환 (경로 주의)
+with open("safety_check_app/logo.png", "rb") as image_file:
+    logo_base64 = base64.b64encode(image_file.read()).decode()
+
+# 2. 모바일에서도 절대 줄바꿈이 일어나지 않도록 Flexbox(가로 묶음) 적용
+st.markdown(f"""
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+        <img src="data:image/png;base64,{logo_base64}" width="60">
+        <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">위험성평가 AI</h1>
+    </div>
+    <p style="margin-top: 5px; font-size: 16px; color: #555;">고용노동부고시 제2024-76호 지침에 따른 위험성평가를 지원합니다.</p>
+""", unsafe_allow_html=True)
+st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
 st.divider()
 
 # --- GPS 위치 수집 ---
