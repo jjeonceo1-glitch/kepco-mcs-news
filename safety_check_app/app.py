@@ -76,6 +76,23 @@ st.set_page_config(
     page_icon="⚡",
     layout="centered" 
 )
+import streamlit as st
+from PIL import Image
+
+# 1. 브라우저 탭 아이콘 및 기본 설정 (가장 먼저 위치해야 합니다)
+logo_img = Image.open("safety_check_app/logo.png")
+st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=logo_img)
+
+# ========================================================
+# 2. ★ 상단 여백을 줄이는 CSS 코드를 이 위치에 넣습니다 ★
+# ========================================================
+st.markdown("""
+    <style>
+    .block-container {
+        padding-top: 1.5rem; /* 이 숫자를 1.0이나 2.0 등으로 바꿔서 여백을 미세 조절할 수 있습니다 */
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- 전문 웹앱 느낌을 위한 커스텀 CSS 디자인 적용 ---
 st.markdown("""
@@ -173,7 +190,7 @@ with col1:
     
 with col2:
     # 이모지를 뺀 깔끔한 텍스트 
-    st.title("위험성평가 AI")
+    st.title("한전MCS 위험성평가 AI")
 st.markdown("고용노동부고시 제2024-76호 지침에 따른 **사진 순회점검 기반 상시 위험성평가**를 지원합니다.")
 st.divider()
 
