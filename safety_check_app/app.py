@@ -1,5 +1,4 @@
 import streamlit as st
-import google.generativeai as genai
 from PIL import Image, ImageOps
 from docx import Document
 from docx.shared import Pt, Mm
@@ -11,118 +10,42 @@ import io
 from datetime import datetime
 import json
 import time
+import base64
 
 from streamlit_geolocation import streamlit_geolocation
 from geopy.geocoders import Nominatim
 import pytz
+import google.generativeai as genai
 
-import streamlit as st
-from PIL import Image, ImageOps
-
-# 1. 탭 아이콘용 (반드시 1:1 정사각형 이미지 파일 사용)
+# ==========================================
+# 1. 페이지 설정 (단 한 번만 맨 처음에 실행)
+# ==========================================
 icon_img = Image.open("safety_check_app/app_icon.png")
+st.set_page_config(
+    page_title="한전MCS 위험성평가 AI",
+    page_icon=icon_img,
+    layout="centered"
+)
 
-# 2. 본문 삽입용 (기존 가로형 로고)
-logo_img = Image.open("safety_check_app/logo.png")
-
-# page_icon에 정사각형 이미지 변수인 icon_img를 넣습니다.
-st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img)
-
-# ========================================================
-# 2. ★ 스마트폰 전용 아이콘 강제 주입 코드를 여기에 넣습니다 ★
-# ========================================================
+# 스마트폰 홈 화면 추가 시 아이콘 적용을 위한 메타 태그 강제 주입
 app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
-
 st.markdown(f"""
     <link rel="apple-touch-icon" href="{app_icon_url}">
     <link rel="icon" sizes="192x192" href="{app_icon_url}">
 """, unsafe_allow_html=True)
 
-# 한전MCS 전용 보안 로그인 함수
-def check_password():
-    """비밀번호가 일치하면 True를 반환합니다."""
-    
-    def password_entered():
-        # 여기에 원하는 4자리 비밀번호를 설정하세요 (현재 '1234')
-        if st.session_state["password"] == "0325":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # 보안을 위해 입력한 비밀번호 삭제
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        # 처음 접속 시 폼 보여주기
-        st.markdown("### 🔒 한전MCS 안전점검 시스템")
-        st.text_input(
-            "관리자 비밀번호 4자리를 입력하세요", 
-            type="password", 
-            on_change=password_entered, 
-            key="password"
-        )
-        return False
-        
-    elif not st.session_state["password_correct"]:
-        # 비밀번호가 틀렸을 때
-        st.markdown("### 🔒 한전MCS 안전점검 시스템")
-        st.text_input(
-            "관리자 비밀번호 4자리를 입력하세요", 
-            type="password", 
-            on_change=password_entered, 
-            key="password"
-        )
-        st.error("비밀번호가 일치하지 않습니다. 다시 시도해 주세요.")
-        return False
-        
-    else:
-        # 비밀번호가 맞았을 때 통과
-        return True
-
-# -----------------------------------------------------
-# 앱 메인 로직 시작
-# check_password()가 True일 때만 아래의 기존 코드들이 실행됩니다.
-# -----------------------------------------------------
-if check_password():
-    # 이 아래부터 원래 작성하셨던 기존 app.py 코드들을 넣으시면 됩니다.
-    st.title("한전MCS 위험성평가 자동화 시스템")
-    st.write("로그인 성공! 보고서 생성을 시작합니다.")
-    
-    # 예시: 원래 있던 파일 업로드 기능, 제미나이 연동 기능 등을 이 들여쓰기 안에 둡니다.
-
 # ==========================================
-# 0. 앱 기본 화면 설정 (가장 먼저 실행되어야 함)
+# 2. 커스텀 CSS 디자인 적용 (여백 및 스타일)
 # ==========================================
-st.set_page_config(
-    page_title="한전MCS 위험성평가 AI",
-    page_icon="⚡",
-    layout="centered" 
-)
-import streamlit as st
-from PIL import Image
-
-# 1. 브라우저 탭 아이콘 및 기본 설정 (가장 먼저 위치해야 합니다)
-logo_img = Image.open("safety_check_app/logo.png")
-st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=logo_img)
-
-# ========================================================
-# 2. ★ 상단 여백을 줄이는 CSS 코드를 이 위치에 넣습니다 ★
-# ========================================================
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 1.5rem; /* 이 숫자를 1.0이나 2.0 등으로 바꿔서 여백을 미세 조절할 수 있습니다 */
+        padding-top: 1.5rem;
     }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- 전문 웹앱 느낌을 위한 커스텀 CSS 디자인 적용 ---
-st.markdown("""
-<style>
-    /* 1. 우측 상단 기본 메뉴 및 하단 워터마크 숨기기 (독립된 앱처럼 보이게 함) */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* 2. 버튼 디자인 고급화 (둥근 모서리, 그림자 효과) */
     div.stButton > button:first-child {
         border-radius: 8px;
         font-weight: bold;
@@ -133,17 +56,17 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 6px 10px rgba(0,0,0,0.1);
     }
-    
-    /* 3. 섹션 나누는 가로줄(Divider) 색상 연하게 조정 */
     hr {
         margin-top: 1.5em;
         margin-bottom: 1.5em;
         border-color: #E0E6ED;
     }
-</style>
+    </style>
 """, unsafe_allow_html=True)
 
-# --- 표 서식(음영 및 정렬) 자동화 함수 ---
+# ==========================================
+# 3. 문서 서식 자동화 함수
+# ==========================================
 def apply_cell_shading(cell, color="D9D9D9"):
     tcPr = cell._tc.get_or_add_tcPr()
     shd = tcPr.find(qn('w:shd'))
@@ -164,61 +87,93 @@ def format_table(table, is_header_top=True):
         for cell in table.rows[0].cells:
             apply_cell_shading(cell, "D9D9D9")
 
-# API 키 및 모델 설정
-API_KEY = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("models/gemini-3.8-flash")
+# ==========================================
+# 4. 보안 로그인 함수 (4자리 비밀번호: 0325)
+# ==========================================
+def check_password():
+    def password_entered():
+        if st.session_state["password"] == "0325":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]
+        else:
+            st.session_state["password_correct"] = False
 
-# ==========================================
-# 1. 좌측 사이드바 (사용 안내 및 정보)
-# ==========================================
-with st.sidebar:
-    # 로고 이미지 삽입 (파일명이 다르다면 logo.png 부분을 수정하세요)
-    try:
-        st.image("logo.png", use_container_width=True)
-    except Exception:
-        st.title("한전MCS 안전재난부") # 로고 파일이 없을 때를 대비한 예비 텍스트
+    if "password_correct" not in st.session_state:
+        st.markdown("### 🔒 한전MCS 안전점검 시스템")
+        st.text_input(
+            "관리자 비밀번호 4자리를 입력하세요", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        return False
         
-    st.divider() # 가로줄 추가
-    st.header("📌 사용 방법")
-    st.markdown("""
-    **1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현재 현장 주소를 불러옵니다.  
-    **2단계:** 점검할 현장의 사진을 1장 업로드합니다.  
-    **3단계:** [평가표 작성 시작] 버튼을 누릅니다.  
-    **4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드하여 서명 후 보관합니다.
-    """)
+    elif not st.session_state["password_correct"]:
+        st.markdown("### 🔒 한전MCS 안전점검 시스템")
+        st.text_input(
+            "관리자 비밀번호 4자리를 입력하세요", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        st.error("비밀번호가 일치하지 않습니다. 다시 시도해 주세요.")
+        return False
+        
+    else:
+        return True
+
+# ==========================================
+# 5. 메인 앱 실행 (비밀번호 통과 시 작동)
+# ==========================================
+if check_password():
+    # API 키 및 모델 설정
+    try:
+        API_KEY = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=API_KEY)
+        # 안정적인 1.5-flash 모델로 설정 (오타 수정)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+    except Exception as e:
+        st.error(f"GEMINI_API_KEY 설정 오류: {e}")
+
+    # --- 좌측 사이드바 구성 ---
+    with st.sidebar:
+        try:
+            st.image("safety_check_app/logo.png", use_container_width=True)
+        except Exception:
+            st.title("한전MCS 안전재난부")
+            
+        st.divider()
+        st.header("📌 사용 방법")
+        st.markdown("""
+        **1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현재 현장 주소를 불러옵니다.  
+        **2단계:** 점검할 현장의 사진을 1장 업로드합니다.  
+        **3단계:** [평가표 작성 시작] 버튼을 누릅니다.  
+        **4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드하여 서명 후 보관합니다.
+        """)
+        st.divider()
+        st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
+        st.caption("© 2027 한전MCS. All rights reserved.")
+
+    # --- 메인 화면 헤더 (모바일 최적화 Flexbox 레이아웃) ---
+    try:
+        with open("safety_check_app/logo.png", "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode()
+        
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                <img src="data:image/png;base64,{logo_base64}" width="60">
+                <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">위험성평가 AI</h1>
+            </div>
+        """, unsafe_allow_html=True)
+    except Exception:
+        st.title("위험성평가 AI")
+
+    st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
+    st.markdown("<p style='font-size: 14px; color: #555;'>본 AI기반 위험성평가는 참고자료이며 관리자가 필히 재확인 해야합니다.</p>", unsafe_allow_html=True)
     st.divider()
-    st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
-    st.caption("© 2027 한전MCS.All rights reserved.")
 
-# ==========================================
-# 2. 메인 화면 UI
-# ==========================================
-from PIL import Image
-
-# 1. 브라우저 상단 탭 아이콘 변경 (선택사항)
-# 기존에 st.set_page_config가 있다면 page_icon 부분을 아래처럼 수정하세요.
-logo_img = Image.open("safety_check_app/logo.png")
-st.set_page_config(page_title="위험성평가 AI", page_icon=logo_img)
-
-# 2. 본문 제목 영역 디자인 (화면을 1 : 8 비율로 나누기)
-# vertical_alignment="center"를 통해 박스들의 세로 중앙을 맞춥니다.
-import base64
-
-# 1. 로고 파일을 읽어서 HTML이 이해할 수 있는 코드로 변환 (경로 주의)
-with open("safety_check_app/logo.png", "rb") as image_file:
-    logo_base64 = base64.b64encode(image_file.read()).decode()
-
-# 2. 모바일에서도 절대 줄바꿈이 일어나지 않도록 Flexbox(가로 묶음) 적용
-st.markdown(f"""
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-        <img src="data:image/png;base64,{logo_base64}" width="60">
-        <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">위험성평가 AI</h1>
-    </div>
-    <p style="margin-top: 5px; font-size: 16px; color: #555;">본 AI기반 위험성평가는 참고자료이며 관리자가 필히 재확인 해야합니다.</p>
-""", unsafe_allow_html=True)
-st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-st.divider()
+    # 이 아래부터 사진 업로드, 제미나이 분석, 워드 다운로드 등 추가 기능을 이어서 작성하시면 됩니다.
+    st.write("✨ 로그인 및 레이아웃 초기화 완료. 핵심 기능을 구현할 차례입니다!")
 
 # --- GPS 위치 수집 ---
 st.subheader("1. 현장 위치 수집")
