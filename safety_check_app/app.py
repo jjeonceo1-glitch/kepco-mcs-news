@@ -22,9 +22,9 @@ import google.generativeai as genai
 # ==========================================
 try:
     icon_img = Image.open("safety_check_app/app_icon.png")
-    st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img, layout="centered")
+    st.set_page_config(page_title="한전MCS AI 위험성평가", page_icon=icon_img, layout="centered")
 except Exception:
-    st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon="⚡", layout="centered")
+    st.set_page_config(page_title="한전MCS AI 위험성평가", page_icon="⚡", layout="centered")
 
 app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
 st.markdown(f"""
@@ -126,17 +126,18 @@ if check_password():
         st.markdown(f"""
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
                 <img src="data:image/png;base64,{logo_base64}" width="60">
-                <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">위험성평가 AI</h1>
+                <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.5px;">AI 위험성평가</h1>
             </div>
         """, unsafe_allow_html=True)
     except Exception:
-        st.title("위험성평가 AI")
+        st.title("AI 위험성평가")
 
     st.markdown("고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-    st.markdown("본 AI 기반 위험성평가는 근로자의 안전을 위한 프로그램이며, 관리자가 직접 2차 확인 해야합니다.")
+    st.markdown("본 AI 기반 위험성평가는 근로자의 안전을 위한 프로그램이며, 관리자가 직접 2차 확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
+    st.info("📍 현재 위치를 평가표 '평가 대상' 칸에 자동 입력하려면 아래 버튼을 눌러주세요. (스마트폰 GPS 켜기 필수)")
     location = streamlit_geolocation()
     current_address = ""
     
@@ -155,7 +156,7 @@ if check_password():
     st.divider()
 
     st.subheader("📸 2단계: 현장 사진 업로드")
-    uploaded_file = st.file_uploader("작업 현장 사진을 업로드해 주세요.", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("작업 현장 사진을 촬영하거나 사진을 업로드해 주세요.", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
