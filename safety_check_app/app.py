@@ -132,12 +132,12 @@ if check_password():
     except Exception:
         st.title("AI 위험성평가")
 
-    st.markdown("고용노동부 고시 제2024-76호 지침에 따른\n**위험성평가**를 지원합니다.")
-    st.markdown("본 AI 위험성평가는 근로자의 안전을 위한 프로그램이며,\n관리자가 직접 2차 확인해야 합니다.")
+    st.markdown("고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
+    st.markdown("본 AI 위험성평가는 근로자의 안전을 위한 프로그램이며, 관리자가 직접 2차 확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
-    st.info("현재 위치를 평가표 '평가 대상' 칸에 자동 입력하려면 아래 버튼을 눌러주세요.\n(스마트폰 GPS 켜기 필수)")
+    st.info("현재 위치를 평가표에 자동 입력하려면 아래 버튼을 눌러주세요.(스마트폰 GPS 켜기 필수)")
     location = streamlit_geolocation()
     current_address = ""
     
