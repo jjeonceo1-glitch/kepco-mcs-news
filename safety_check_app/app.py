@@ -176,23 +176,20 @@ if check_password():
     st.write("✨ 로그인 및 레이아웃 초기화 완료. 핵심 기능을 구현할 차례입니다!")
 
 # --- GPS 위치 수집 ---
-st.subheader("1. 현장 위치 수집")
-st.info("📍 현재 위치를 평가표 '평가 대상' 칸에 자동 입력하려면 아래 버튼을 눌러주세요. (스마트폰 GPS 켜기 필수)")
-location = streamlit_geolocation()
-
-current_address = ""
-if location and location.get('latitude') and location.get('longitude'):
-    lat = location['latitude']
-    lon = location['longitude']
-    try:
-        geolocator = Nominatim(user_agent="kepco_mcs_safety_app")
-        address = geolocator.reverse(f"{lat}, {lon}", language='ko')
-        current_address = address.address if address else f"위도: {lat}, 경도: {lon}"
-    except Exception:
-        current_address = f"위도: {lat}, 경도: {lon}"
-    st.success(f"**현재 확인된 주소:** {current_address}")
-
-st.divider()
+st.subheader("📍 1단계: 현장 위치 수집")
+    st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
+    
+    # 위치 수집 모듈 실행 (버튼 생성)
+    location = streamlit_geolocation()
+    
+    # 위치 정보가 정상적으로 들어왔는지 확인
+    if location is not None and location.get('latitude') is not None:
+        lat = location['latitude']
+        lon = location['longitude']
+        st.success("✅ 위치 수집 완료!")
+        st.info(f"위도: {lat} / 경도: {lon}")
+    
+    st.divider()
 
 # --- 사진 업로드 ---
 st.subheader("2. 현장 사진 업로드")
@@ -400,7 +397,7 @@ if uploaded_file is not None:
                         row[3].text = item.get("current_measure", "")
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
-                        row[6].text = '담당자\n완료일\n년  월  일\n(서명)'
+                        row[6].text = '담당자\n\n완료일\n년  월  일\n\n(서명)'
                     
                     format_table(table5)
                     
@@ -415,7 +412,7 @@ if uploaded_file is not None:
                     hdr[0].text, hdr[1].text, hdr[2].text = '공유 일시', '공유한 사람', '참석자 서명'
                     format_table(table6)
                     
-                    doc.add_paragraph("\n※ 이 문서는 초안입니다. 유해·위험요인은 본 AI 모델이 사진에서 분석한 결과이고, 위험성 수준과 감소대책 후보는 코드가 정해진 규칙으로 고른 것입니다. 허용 가능 여부의 결정, 대책 선택과 실행, 근로자 참여는 사업주가 합니다.(사업장 위험성 평가에 관한 지침 제6조·제11조·제12조)")
+                    doc.add_paragraph("\n※ 이 문서는 초안입니다. 유해·위험요인은 본 AI 모델이 사진에서 분석한 결과이고, 위험성 수준과 감소대책 후보는 코드가 정해진 규칙으로 고른 것입니다. 허용 가능 여부의 결정, 대책 선택과 실행, 근로자 참여는 관리자가 합니다.(사업장 위험성 평가에 관한 지침 제6조·제11조·제12조)")
                     doc.add_paragraph("※ 사진에 보이지 않는 위험(화학물질 소음 분진·중량물 취급 작업 자세 등)은 이 표에 들어 있지 않습니다. 파악 단계에서 추가 작성해 주세요.")
                     
                     # 파일 저장
