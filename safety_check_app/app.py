@@ -16,6 +16,58 @@ from streamlit_geolocation import streamlit_geolocation
 from geopy.geocoders import Nominatim
 import pytz
 
+import streamlit as st
+
+# 한전MCS 전용 보안 로그인 함수
+def check_password():
+    """비밀번호가 일치하면 True를 반환합니다."""
+    
+    def password_entered():
+        # 여기에 원하는 4자리 비밀번호를 설정하세요 (현재 '1234')
+        if st.session_state["password"] == "0325":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # 보안을 위해 입력한 비밀번호 삭제
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # 처음 접속 시 폼 보여주기
+        st.markdown("### 🔒 한전MCS 안전점검 시스템")
+        st.text_input(
+            "관리자 비밀번호 4자리를 입력하세요", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        return False
+        
+    elif not st.session_state["password_correct"]:
+        # 비밀번호가 틀렸을 때
+        st.markdown("### 🔒 한전MCS 안전점검 시스템")
+        st.text_input(
+            "관리자 비밀번호 4자리를 입력하세요", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        st.error("비밀번호가 일치하지 않습니다. 다시 시도해 주세요.")
+        return False
+        
+    else:
+        # 비밀번호가 맞았을 때 통과
+        return True
+
+# -----------------------------------------------------
+# 앱 메인 로직 시작
+# check_password()가 True일 때만 아래의 기존 코드들이 실행됩니다.
+# -----------------------------------------------------
+if check_password():
+    # 이 아래부터 원래 작성하셨던 기존 app.py 코드들을 넣으시면 됩니다.
+    st.title("한전MCS 안전점검 자동화 시스템 ⚡")
+    st.write("로그인 성공! 안전점검 보고서 생성을 시작합니다.")
+    
+    # 예시: 원래 있던 파일 업로드 기능, 제미나이 연동 기능 등을 이 들여쓰기 안에 둡니다.
+
 # ==========================================
 # 0. 앱 기본 화면 설정 (가장 먼저 실행되어야 함)
 # ==========================================
