@@ -332,3 +332,21 @@ if check_password():
                             row[4].text = item.get("level", "")
                             row[5].text = item.get("countermeasure", "")
                             row[6].text = '담당자\n\n완료일\n\n(서명)'
+                        
+                        format_table(table5)
+                        
+                        buffer = io.BytesIO()
+                        doc.save(buffer)
+                        buffer.seek(0)
+                        
+                        st.success("✅ 문서 작성이 완료되었습니다! 아래 버튼을 눌러 다운로드하세요.")
+                        st.download_button(
+                            label="📄 현장 위험성 평가표(.docx) 다운로드",
+                            data=buffer,
+                            file_name=f"현장_위험성_평가표_{datetime.now(korea_tz).strftime('%Y%m%d_%H%M%S')}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            type="primary"
+                        )
+                            
+                    except Exception as e:
+                        st.error(f"분석 또는 문서 생성 중 오류가 발생했습니다: {e}")
