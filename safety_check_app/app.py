@@ -17,6 +17,18 @@ from geopy.geocoders import Nominatim
 import pytz
 
 import streamlit as st
+from PIL import Image, ImageOps
+
+# 1. 앱 설치용 정사각형 아이콘
+icon_img = Image.open("safety_check_app/app_icon.png")
+
+# 2. 본문 표시용 가로형 로고
+logo_img = Image.open("safety_check_app/logo.png")
+
+# page_icon에 정사각형 이미지를 넣습니다.
+st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img)
+
+# (이하 CSS 여백 조절 코드 및 본문 코드는 기존과 동일)
 
 # 한전MCS 전용 보안 로그인 함수
 def check_password():
