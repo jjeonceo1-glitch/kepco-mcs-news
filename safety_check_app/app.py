@@ -157,7 +157,23 @@ with st.sidebar:
 # ==========================================
 # 2. 메인 화면 UI
 # ==========================================
-st.title("🚧 한전MCS 위험성평가 AI")
+from PIL import Image
+
+# 1. 브라우저 상단 탭 아이콘 변경 (선택사항)
+# 기존에 st.set_page_config가 있다면 page_icon 부분을 아래처럼 수정하세요.
+logo_img = Image.open("safety_check_app/logo.png")
+st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=logo_img)
+
+# 2. 본문 제목 영역 디자인 (화면을 1 : 8 비율로 나누기)
+col1, col2 = st.columns([1, 8])
+
+with col1:
+    # width 값을 조절해서 로고 크기를 키우거나 줄일 수 있습니다.
+    st.image(logo_img, width=60)
+    
+with col2:
+    # 이모지를 뺀 깔끔한 텍스트 
+    st.title("한전MCS 위험성평가 AI")
 st.markdown("고용노동부고시 제2024-76호 지침에 따른 **사진 순회점검 기반 상시 위험성평가**를 지원합니다.")
 st.divider()
 
