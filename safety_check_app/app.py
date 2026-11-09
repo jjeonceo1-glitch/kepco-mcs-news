@@ -16,6 +16,7 @@ from streamlit_geolocation import streamlit_geolocation
 from geopy.geocoders import Nominatim
 import pytz
 import google.generativeai as genai
+import streamlit.components.v1 as components
 
 # ==========================================
 # 1. 페이지 설정 (단 한 번만 실행)
@@ -26,11 +27,35 @@ try:
 except Exception:
     st.set_page_config(page_title="한전MCS AI 위험성평가", page_icon="⚡", layout="centered")
 
+# ==========================================
+# (수정) 스마트폰 전용 아이콘 <head> 영역 강제 주입
+# ==========================================
 app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
-st.markdown(f"""
-    <link rel="apple-touch-icon" href="{app_icon_url}">
-    <link rel="icon" sizes="192x192" href="{app_icon_url}">
-""", unsafe_allow_html=True)
+
+components.html(f"""
+<script>
+    // Streamlit 프레임의 부모 문서(전체 화면)를 선택
+    const parentDoc = window.parent.document;
+    
+    // 기존 아이콘 태그가 있다면 제거 (충돌 방지)
+    const oldApple = parentDoc.querySelector('link[rel="apple-touch-icon"]');
+    if(oldApple) oldApple.remove();
+    const oldAndroid = parentDoc.querySelector('link[rel="icon"][sizes="192x192"]');
+    if(oldAndroid) oldAndroid.remove();
+
+    // 새 아이콘 태그를 생성하여 <head>에 직접 꽂아넣기
+    const appleIcon = parentDoc.createElement('link');
+    appleIcon.rel = 'apple-touch-icon';
+    appleIcon.href = '{app_icon_url}';
+    parentDoc.head.appendChild(appleIcon);
+    
+    const androidIcon = parentDoc.createElement('link');
+    androidIcon.rel = 'icon';
+    androidIcon.sizes = '192x192';
+    androidIcon.href = '{app_icon_url}';
+    parentDoc.head.appendChild(androidIcon);
+</script>
+""", height=0, width=0)
 
 # ==========================================
 # 2. 커스텀 CSS 디자인
