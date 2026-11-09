@@ -179,17 +179,17 @@ if check_password():
 st.subheader("📍 1단계: 현장 위치 수집")
 st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
     
-    # 위치 수집 모듈 실행 (버튼 생성)
-    location = streamlit_geolocation()
+# 위치 수집 모듈 실행 (버튼 생성)
+location = streamlit_geolocation()
     
     # 위치 정보가 정상적으로 들어왔는지 확인
-    if location is not None and location.get('latitude') is not None:
+if location is not None and location.get('latitude') is not None:
         lat = location['latitude']
         lon = location['longitude']
         st.success("✅ 위치 수집 완료!")
         st.info(f"위도: {lat} / 경도: {lon}")
     
-    st.divider()
+st.divider()
 
 # --- 사진 업로드 ---
 st.subheader("2. 현장 사진 업로드")
