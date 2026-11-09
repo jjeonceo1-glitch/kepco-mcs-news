@@ -18,15 +18,11 @@ import pytz
 import google.generativeai as genai
 
 # ==========================================
-# 1. 페이지 설정 (단 한 번만 맨 처음에 실행)
+# 1. 페이지 설정 (단 한 번만 실행)
 # ==========================================
 try:
     icon_img = Image.open("safety_check_app/app_icon.png")
-    st.set_page_config(
-        page_title="한전MCS 위험성평가 AI",
-        page_icon=icon_img,
-        layout="centered"
-    )
+    st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img, layout="centered")
 except Exception:
     st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon="⚡", layout="centered")
 
@@ -37,7 +33,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. 커스텀 CSS 디자인 적용
+# 2. 커스텀 CSS 디자인
 # ==========================================
 st.markdown("""
     <style>
@@ -103,13 +99,13 @@ def check_password():
         return True
 
 # ==========================================
-# 5. 메인 앱 실행 (비밀번호 통과 시 작동)
+# 5. 메인 앱 실행
 # ==========================================
 if check_password():
     try:
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("models/gemini-3.8-flash") # 오타 수정 완료
+        model = genai.GenerativeModel("models/gemini-3.8-flash")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
@@ -120,9 +116,7 @@ if check_password():
             st.title("한전MCS 안전재난부")
         st.divider()
         st.header("📌 사용 방법")
-        st.markdown("**1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현재 현장 주소를 불러옵니다.  \n**2단계:** 점검할 현장의 사진을 1장 업로드합니다.  \n**3단계:** [평가표 작성 시작] 버튼을 누릅니다.  \n**4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드하여 서명 후 보관합니다.")
-        st.divider()
-        st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
+        st.markdown("**1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현장 주소를 불러옵니다.  \n**2단계:** 점검할 현장의 사진을 1장 업로드합니다.  \n**3단계:** [평가표 작성 시작] 버튼을 누릅니다.  \n**4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드합니다.")
 
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
@@ -139,19 +133,13 @@ if check_password():
     st.markdown("고용노동부고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
     st.divider()
 
-    # --- 1단계: 위치 수집 ---
     st.subheader("📍 1단계: 현장 위치 수집")
-    st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
-    
     location = streamlit_geolocation()
-    current_address = "위치 정보 없음 (수집 버튼을 누르지 않음)" # 기본값 설정
+    current_address = ""
     
     if location is not None and location.get('latitude') is not None:
-        lat = location['latitude']
-        lon = location['longitude']
+        lat, lon = location['latitude'], location['longitude']
         st.success("✅ 위치 수집 완료!")
-        
-        # 위도/경도를 실제 주소로 변환
         try:
             geolocator = Nominatim(user_agent="kepco_safety_app")
             addr = geolocator.reverse((lat, lon))
@@ -163,9 +151,8 @@ if check_password():
     
     st.divider()
 
-    # --- 2단계: 사진 업로드 ---
     st.subheader("📸 2단계: 현장 사진 업로드")
-    uploaded_file = st.file_uploader("작업 현장 사진을 선택하거나 촬영해 주세요.", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("작업 현장 사진을 업로드해 주세요.", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
@@ -178,10 +165,9 @@ if check_password():
             
         with col2:
             st.warning("⚠️ **주의:** 사진이 흐리거나 너무 멀리서 찍힌 경우 위험 요소를 판독하기 어려울 수 있습니다.")
-            st.write("사진 확인이 완료되었다면 아래 버튼을 눌러 문서를 생성하세요.")
             
             if st.button("🚀 위험성평가 작성 시작", type="primary", use_container_width=True):
-                with st.spinner("AI가 산업안전보건법령을 검토하고 문서를 조립 중입니다... (약 10~15초 소요)"):
+                with st.spinner("AI가 산업안전보건법령을 검토하고 문서를 조립 중입니다..."):
                     prompt = """
                     당신은 한전MCS의 산업안전보건 및 현장점검 전문가입니다.
                     사진을 분석하여 '위험성평가표' 작성을 위한 데이터를 JSON 형식으로 반환해주세요.
@@ -189,34 +175,27 @@ if check_password():
                     [JSON 구조]
                     {
                       "criteria": {
-                        "high": {"condition": "사진 현장 특성에 맞는 '상' 수준 판단 기준 (예: 활선 노출, 2m 이상 개구부 등)", "action": "상 수준 조치 사항"},
-                        "medium": {"condition": "사진 현장 특성에 맞는 '중' 수준 판단 기준", "action": "중 수준 조치 사항"},
-                        "low": {"condition": "사진 현장 특성에 맞는 '하' 수준 판단 기준", "action": "하 수준 조치 사항"},
-                        "legal_basis": "수준 판단의 기준이 된 구체적 법적 근거"
+                        "high": {"condition": "상 수준 판단 기준", "action": "상 수준 조치 사항"},
+                        "medium": {"condition": "중 수준 판단 기준", "action": "중 수준 조치 사항"},
+                        "low": {"condition": "하 수준 판단 기준", "action": "하 수준 조치 사항"},
+                        "legal_basis": "판단 근거 (법적 근거)"
                       },
                       "hazards": [
                         {
                           "no": 1,
                           "factor": "유해·위험요인",
                           "type": "재해형태",
-                          "current_measure": "현재 조치 (예: 보이지 않음)",
+                          "current_measure": "현재 조치",
                           "level": "상, 중, 하 중 택 1",
-                          "countermeasure": "감소대책(후보·제12조 순서)"
+                          "countermeasure": "감소대책"
                         }
                       ],
-                      "tbm": [
-                        "작업 전 공유(TBM) 사항 1"
-                      ]
+                      "tbm": ["작업 전 공유(TBM) 사항 1", "작업 전 공유(TBM) 사항 2"]
                     }
-                    사진에 보이는 작업 환경(예: 고소작업, 전기작업 등)을 파악하여, 그 현장에 가장 적합한 '위험성 수준 기준(criteria)'과 '위험 요인(hazards)'을 도출해주세요.
                     """
                     
                     try:
-                        response = model.generate_content(
-                            [prompt, image],
-                            generation_config={"response_mime_type": "application/json"}
-                        )
-                        
+                        response = model.generate_content([prompt, image], generation_config={"response_mime_type": "application/json"})
                         data = json.loads(response.text)
                         hazards = data.get("hazards", [])
                         total_count = len(hazards)
@@ -250,6 +229,7 @@ if check_password():
                         subtitle = doc.add_paragraph('사업장 위험성평가에 관한 지침(고용노동부고시 제2024-76호)의 절차를 따름')
                         subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
                         
+                        # --- 1. 평가표 헤더 ---
                         table1 = doc.add_table(rows=4, cols=4)
                         table1.style = 'Table Grid'
                         table1.cell(0,0).text, table1.cell(0,1).text = '사업장', '[          지점]'
@@ -260,68 +240,68 @@ if check_password():
                         table1.cell(2,2).text, table1.cell(2,3).text = '평가 결과', f'{total_count}건, 상 {count_high}·중 {count_mid}·하 {count_low}'
                         table1.cell(3,0).text, table1.cell(3,1).text = '평가 책임자', '         (서명)'
                         table1.cell(3,2).text, table1.cell(3,3).text = '참여 근로자', '         (서명)'
-                        
                         format_table(table1, is_header_top=False)
                         for r in range(4):
                             apply_cell_shading(table1.cell(r, 0), "D9D9D9")
                             apply_cell_shading(table1.cell(r, 2), "D9D9D9")
                         doc.add_paragraph()
                         
+                        # --- 2. 절차 ---
                         doc.add_heading('1. 절차', level=2)
                         table2 = doc.add_table(rows=7, cols=3)
                         table2.style = 'Table Grid'
-                        hdr = table2.rows[0].cells
-                        hdr[0].text, hdr[1].text, hdr[2].text = '절차', 'AI 판독', '관리자 확인'
-                        table2.cell(1,0).text = '가. 사전준비(제9조)'
-                        table2.cell(1,1).text = '위험성 수준 기준 기본안'
-                        table2.cell(1,2).text = '위험성의 수준과 그 수준을 판단하는 기준, 허용 가능한 위험성의 수준을 확정(제2항)'
-                        table2.cell(2,0).text = '나. 유해·위험요인 파악(제10조)'
-                        table2.cell(2,1).text = f'현장점검(제10조 제1호)간 첨부된 사진에서 {total_count}건'
-                        table2.cell(2,2).text = '사진에 포함되지 않은 현장 위험물(화학물질·소음·중량물 등)과 근로자가 제안한 위험요인도 추가하여 파악'
-                        table2.cell(3,0).text = '다. 위험성 결정(제11조)'
-                        table2.cell(3,1).text = '상·중·하 수준으로 분류'
-                        table2.cell(3,2).text = '허용 가능한지 결정, 현장 근로자 참여(제6조)'
-                        table2.cell(4,0).text = '라. 위험성 감소대책 수립·실행(제12조)'
-                        table2.cell(4,1).text = '감소대책 수립(제거·대체 → 공학적 대책 → 관리적 대책 → 보호구 착용)'
-                        table2.cell(4,2).text = '감소대책에 대한 담당자 및 완료일 작성, 실행 후 위험성 수준 재확인'
-                        table2.cell(5,0).text = '마. 공유(제13조)'
-                        table2.cell(5,1).text = '작업 전 위험요인과 감소대책을 공유'
-                        table2.cell(5,2).text = '작업 전 안전점검회의(TBM)에서 공유하고 서명'
-                        table2.cell(6,0).text = '바. 기록·보존(제14조)'
-                        table2.cell(6,1).text = '본 문서'
-                        table2.cell(6,2).text = '서명한 본 문서를 보관'
-                        
+                        hdr2 = table2.rows[0].cells
+                        hdr2[0].text, hdr2[1].text, hdr2[2].text = '절차', 'AI 판독', '관리자 확인'
+                        table2.cell(1,0).text, table2.cell(1,1).text, table2.cell(1,2).text = '가. 사전준비(제9조)', '위험성 수준 기준 기본안', '위험성의 수준과 그 수준을 판단하는 기준, 허용 가능한 위험성의 수준을 확정(제2항)'
+                        table2.cell(2,0).text, table2.cell(2,1).text, table2.cell(2,2).text = '나. 유해·위험요인 파악(제10조)', f'현장점검(제10조 제1호)간 첨부된 사진에서 {total_count}건', '사진에 포함되지 않은 현장 위험물(화학물질·소음·중량물 등)과 근로자가 제안한 위험요인도 추가하여 파악'
+                        table2.cell(3,0).text, table2.cell(3,1).text, table2.cell(3,2).text = '다. 위험성 결정(제11조)', '상·중·하 수준으로 분류', '허용 가능한지 결정, 현장 근로자 참여(제6조)'
+                        table2.cell(4,0).text, table2.cell(4,1).text, table2.cell(4,2).text = '라. 위험성 감소대책 수립·실행(제12조)', '감소대책 수립(제거·대체 → 공학적 대책 → 관리적 대책 → 보호구 착용)', '감소대책에 대한 담당자 및 완료일 작성, 실행 후 위험성 수준 재확인'
+                        table2.cell(5,0).text, table2.cell(5,1).text, table2.cell(5,2).text = '마. 공유(제13조)', '작업 전 위험요인과 감소대책을 공유', '작업 전 안전점검회의(TBM)에서 공유하고 서명'
+                        table2.cell(6,0).text, table2.cell(6,1).text, table2.cell(6,2).text = '바. 기록·보존(제14조)', '본 문서', '서명한 본 문서를 보관'
                         format_table(table2)
+                        doc.add_paragraph("※ 매월 1회 이상 위험개소 순회점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
                         
-                        doc.add_heading('2. 위험성 수준 기준(AI 판독)', level=2)
+                        # --- 3. 법이 정한 의무 ---
+                        doc.add_heading('2. 법이 정한 의무', level=2)
+                        table3 = doc.add_table(rows=4, cols=4)
+                        table3.style = 'Table Grid'
+                        hdr3 = table3.rows[0].cells
+                        hdr3[0].text, hdr3[1].text, hdr3[2].text, hdr3[3].text = '의무', '조문', '과태료', '비고'
+                        table3.cell(1,0).text, table3.cell(1,1).text, table3.cell(1,2).text, table3.cell(1,3).text = '위험성평가 실시', '제36조 제1항', '1천만원 이하', '위험성평가표 전체'
+                        table3.cell(2,0).text, table3.cell(2,1).text, table3.cell(2,2).text, table3.cell(2,3).text = '근로자의 참여\n근로자대표 참여\n결과 알림', '제36조 제2항ㆍ제3항ㆍ제4항 전단', '500만원 이하', '참여 근로자 서명\n작업 전 공유'
+                        table3.cell(3,0).text, table3.cell(3,1).text, table3.cell(3,2).text, table3.cell(3,3).text = '결과 기록·보존', '제36조 제5항', '300만원 이하', '서명된 본 평가표 보관'
+                        format_table(table3)
+                        doc.add_paragraph("※ 과태료 시행 : 상시 50명 이상(건설업은 공사 금액 50억원 이상) 2027년 1월 1일 시행(산업안전보건법 부칙 제1조). 중대재해로 이어질 수 있는 위험은 작업 전 안전점검회의(TBM) 등을 통해 상시 알리도록 노력해야 합니다(제36조 제4항 후단).")
+                        
+                        # --- 4. 위험성 수준 기준 ---
+                        doc.add_heading('3. 위험성 수준 기준(AI 판독)', level=2)
                         table4 = doc.add_table(rows=6, cols=4)
                         table4.style = 'Table Grid'
-                        hdr = table4.rows[0].cells
-                        hdr[0].text, hdr[1].text, hdr[2].text, hdr[3].text = '수준', '기준 제시', '판단', '조치'
+                        hdr4 = table4.rows[0].cells
+                        hdr4[0].text, hdr4[1].text, hdr4[2].text, hdr4[3].text = '수준', '기준 제시', '판단', '조치'
                         
-                        criteria_data = data.get("criteria", {})
-                        high_c = criteria_data.get("high", {})
-                        mid_c = criteria_data.get("medium", {})
-                        low_c = criteria_data.get("low", {})
-                        legal_basis = criteria_data.get("legal_basis", "산업안전보건기준에 관한 규칙 참조")
+                        c_data = data.get("criteria", {})
+                        table4.cell(1,0).text, table4.cell(1,1).text, table4.cell(1,2).text, table4.cell(1,3).text = '상', c_data.get("high", {}).get("condition", ""), '허용 불가', c_data.get("high", {}).get("action", "")
+                        table4.cell(2,0).text, table4.cell(2,1).text, table4.cell(2,2).text, table4.cell(2,3).text = '중', c_data.get("medium", {}).get("condition", ""), '허용 불가', c_data.get("medium", {}).get("action", "")
+                        table4.cell(3,0).text, table4.cell(3,1).text, table4.cell(3,2).text, table4.cell(3,3).text = '하', c_data.get("low", {}).get("condition", ""), '허용 가능', c_data.get("low", {}).get("action", "")
                         
-                        table4.cell(1,0).text, table4.cell(1,1).text, table4.cell(1,2).text, table4.cell(1,3).text = '상', high_c.get("condition", ""), '허용 불가', high_c.get("action", "")
-                        table4.cell(2,0).text, table4.cell(2,1).text, table4.cell(2,2).text, table4.cell(2,3).text = '중', mid_c.get("condition", ""), '허용 불가', mid_c.get("action", "")
-                        table4.cell(3,0).text, table4.cell(3,1).text, table4.cell(3,2).text, table4.cell(3,3).text = '하', low_c.get("condition", ""), '허용 가능', low_c.get("action", "")
                         table4.cell(4,0).text = '판단 근거'
-                        table4.cell(4,1).text = legal_basis
+                        table4.cell(4,1).text = c_data.get("legal_basis", "")
                         table4.cell(4,1).merge(table4.cell(4,3))
-                        table4.cell(5,0).merge(table4.cell(5,3)).text = '위 판독 기준으로 정함.', '     근로자              (서명)'
+                        
+                        table4.cell(5,0).text = '위 판독 기준으로 정함.     근로자              (서명)'
+                        table4.cell(5,0).merge(table4.cell(5,3))
                         
                         format_table(table4)
                         apply_cell_shading(table4.cell(5, 0), "D9D9D9")
                         doc.add_page_break()
                         
-                        doc.add_heading('3. 위험성 평가표', level=2)
+                        # --- 5. 위험성 평가표 ---
+                        doc.add_heading('4. 위험성 평가표', level=2)
                         table5 = doc.add_table(rows=1, cols=7)
                         table5.style = 'Table Grid'
-                        hdr = table5.rows[0].cells
-                        hdr[0].text, hdr[1].text, hdr[2].text, hdr[3].text, hdr[4].text, hdr[5].text, hdr[6].text = '번호', '유해·위험요인', '재해형태', '현재 조치', '위험 수준', '감소 대책', '담당\n완료일'
+                        hdr5 = table5.rows[0].cells
+                        hdr5[0].text, hdr5[1].text, hdr5[2].text, hdr5[3].text, hdr5[4].text, hdr5[5].text, hdr5[6].text = '번호', '유해·위험요인\n(사진에서 보이는 것)', '재해형태', '현재 조치', '위험 수준', '감소 대책\n(제12조)', '담당\n완료일'
                         
                         for item in hazards:
                             row = table5.add_row().cells
@@ -331,9 +311,22 @@ if check_password():
                             row[3].text = item.get("current_measure", "")
                             row[4].text = item.get("level", "")
                             row[5].text = item.get("countermeasure", "")
-                            row[6].text = '담당자\n\n완료일\n\n(서명)'
-                        
+                            row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
                         format_table(table5)
+                        
+                        # --- 6. 안전점검회의(TBM) 공유 ---
+                        doc.add_heading('5. 안전점검회의(TBM) 공유', level=2)
+                        for i, tbm_text in enumerate(data.get("tbm", [])):
+                            doc.add_paragraph(f"{i+1}. {tbm_text}")
+                        
+                        table6 = doc.add_table(rows=2, cols=3)
+                        table6.style = 'Table Grid'
+                        hdr6 = table6.rows[0].cells
+                        hdr6[0].text, hdr6[1].text, hdr6[2].text = '공유 일시', '공유한 사람', '참석자 서명'
+                        format_table(table6)
+                        
+                        doc.add_paragraph("\n※ 이 문서는 초안입니다. 유해·위험요인은 본 AI 모델이 사진에서 분석한 결과이고, 위험성 수준과 감소대책 후보는 코드가 정해진 규칙으로 고른 것입니다. 허용 가능 여부의 결정, 대책 선택과 실행, 근로자 참여는 관리자가 시행합니다.(사업장 위험성 평가에 관한 지침 제6조·제11조·제12조)")
+                        doc.add_paragraph("※ 사진에 보이지 않는 위험(화학물질 소음 분진·중량물 취급 작업 자세 등)은 이 표에 들어 있지 않습니다. 파악 단계에서 추가 작성해 주세요.")
                         
                         buffer = io.BytesIO()
                         doc.save(buffer)
@@ -347,6 +340,5 @@ if check_password():
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                             type="primary"
                         )
-                            
                     except Exception as e:
                         st.error(f"분석 또는 문서 생성 중 오류가 발생했습니다: {e}")
