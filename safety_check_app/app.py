@@ -18,17 +18,22 @@ import pytz
 
 import streamlit as st
 from PIL import Image, ImageOps
+import base64
 
-# 1. 앱 설치용 정사각형 아이콘
+# 1. 브라우저 탭 아이콘 및 기본 설정 (가장 먼저 위치해야 합니다)
 icon_img = Image.open("safety_check_app/app_icon.png")
-
-# 2. 본문 표시용 가로형 로고
 logo_img = Image.open("safety_check_app/logo.png")
-
-# page_icon에 정사각형 이미지를 넣습니다.
 st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img)
 
-# (이하 CSS 여백 조절 코드 및 본문 코드는 기존과 동일)
+# ========================================================
+# 2. ★ 스마트폰 전용 아이콘 강제 주입 코드를 여기에 넣습니다 ★
+# ========================================================
+app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
+
+st.markdown(f"""
+    <link rel="apple-touch-icon" href="{app_icon_url}">
+    <link rel="icon" sizes="192x192" href="{app_icon_url}">
+""", unsafe_allow_html=True)
 
 # 한전MCS 전용 보안 로그인 함수
 def check_password():
