@@ -20,9 +20,16 @@ import streamlit as st
 from PIL import Image, ImageOps
 import base64
 
-# 1. 브라우저 탭 아이콘 및 기본 설정 (가장 먼저 위치해야 합니다)
+import streamlit as st
+from PIL import Image
+
+# 1. 탭 아이콘용 (반드시 1:1 정사각형 이미지 파일 사용)
 icon_img = Image.open("safety_check_app/app_icon.png")
+
+# 2. 본문 삽입용 (기존 가로형 로고)
 logo_img = Image.open("safety_check_app/logo.png")
+
+# page_icon에 정사각형 이미지 변수인 icon_img를 넣습니다.
 st.set_page_config(page_title="한전MCS 위험성평가 AI", page_icon=icon_img)
 
 # ========================================================
