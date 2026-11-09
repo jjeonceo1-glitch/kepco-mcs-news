@@ -175,13 +175,13 @@ if check_password():
     # 이 아래부터 사진 업로드, 제미나이 분석, 워드 다운로드 등 추가 기능을 이어서 작성하시면 됩니다.
     st.write("✨ 로그인 및 레이아웃 초기화 완료. 핵심 기능을 구현할 차례입니다!")
 
-# --- GPS 위치 수집 ---
+    # --- 1단계: 위치 수집 ---
 st.subheader("📍 1단계: 현장 위치 수집")
 st.write("아래 아이콘을 눌러 현재 위치(GPS)를 수집해 주세요.")
-    
+
 # 위치 수집 모듈 실행 (버튼 생성)
 location = streamlit_geolocation()
-    
+  
     # 위치 정보가 정상적으로 들어왔는지 확인
 if location is not None and location.get('latitude') is not None:
         lat = location['latitude']
