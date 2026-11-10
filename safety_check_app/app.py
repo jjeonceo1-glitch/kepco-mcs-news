@@ -101,16 +101,12 @@ def format_table(table, is_header_top=True):
 def compress_image(uploaded_file, max_size=(1024, 1024), quality=80):
     img = Image.open(uploaded_file)
     img = ImageOps.exif_transpose(img) 
-    
     if img.mode != 'RGB':
         img = img.convert('RGB')
-        
     img.thumbnail(max_size) 
-    
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=quality, optimize=True)
     buf.seek(0)
-    
     return Image.open(buf)
 
 def insert_signature_to_cell(cell, name, date_str, canvas_image_data, is_horizontal=False):
@@ -125,9 +121,12 @@ def insert_signature_to_cell(cell, name, date_str, canvas_image_data, is_horizon
         p.add_run(f"{name}\n{date_str}\n")
         
     if canvas_image_data is not None:
+        # ★ 수정됨: 워드 오류를 막기 위해 RGBA를 호환성 높은 RGB로 변환하여 JPEG로 삽입
         img = Image.fromarray(canvas_image_data.astype('uint8'), 'RGBA')
+        img = img.convert("RGB")
+        
         img_buffer = io.BytesIO()
-        img.save(img_buffer, format="PNG")
+        img.save(img_buffer, format="JPEG") 
         img_buffer.seek(0)
         p.add_run().add_picture(img_buffer, width=Mm(18))
 
@@ -161,7 +160,7 @@ if check_password():
     try:
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("models/gemini-3.8-flash")
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
@@ -190,11 +189,9 @@ if check_password():
         st.title("AI 위험성평가")
 
     st.markdown("■ 고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 관리자가 직접 재확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
-    st.info("현재 위치를 평가표에 자동 입력하려면 아래 버튼을 눌러주세요.(스마트폰 GPS 켜기 필수)")
     location = streamlit_geolocation()
     current_address = ""
     
@@ -213,9 +210,7 @@ if check_password():
     st.divider()
 
     st.subheader("📸 2단계: 현장 사진 업로드")
-    st.info("위험장소를 촬영 후 사진을 업로드해 주세요.")
     uploaded_file = st.file_uploader("Tip: 사진에 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.", type=["jpg", "jpeg", "png"])
-
     image = None
     if uploaded_file is not None:
         image = compress_image(uploaded_file)
@@ -228,7 +223,7 @@ if check_password():
     st.divider()
     
     # ==========================================
-    # ✍️ 서명 패드 (추가된 UI 영역)
+    # ✍️ 서명 패드 (UI 및 사이즈 최적화)
     # ==========================================
     st.subheader("✍️ 3단계: 담당자 및 근로자 서명")
     st.info("아래 패드에 직접 서명해 주세요. 작성된 서명은 모든 문서 란에 자동 적용됩니다.")
@@ -237,18 +232,18 @@ if check_password():
     with col_sig1:
         manager_name = st.text_input("평가 책임자(담당자) 성명", placeholder="이름 입력")
         st.markdown("**평가 책임자 서명**")
+        # ★ 수정됨: 강제 늘림 CSS를 삭제하고 모바일에 맞게 내부 픽셀 150px로 고정 (좌표 왜곡 방지)
         manager_canvas = st_canvas(
             stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
-            height=120, width=100, drawing_mode="freedraw", key="manager_sign"
+            height=150, width=150, drawing_mode="freedraw", key="manager_sign"
         )
-        st.markdown("<style>canvas {width: 100% !important;}</style>", unsafe_allow_html=True)
         
     with col_sig2:
         worker_name = st.text_input("참여 근로자 성명", placeholder="이름 입력")
         st.markdown("**참여 근로자 서명**")
         worker_canvas = st_canvas(
             stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
-            height=120, width=100, drawing_mode="freedraw", key="worker_sign"
+            height=150, width=150, drawing_mode="freedraw", key="worker_sign"
         )
 
     st.divider()
@@ -336,7 +331,6 @@ if check_password():
                     table1.cell(2,0).text, table1.cell(2,1).text = '평가 방법', '현장점검·사진 1장'
                     table1.cell(2,2).text, table1.cell(2,3).text = '평가 결과', f'{total_count}건, 상 {count_high}·중 {count_mid}·하 {count_low}'
                     
-                    # 1. 헤더 서명 삽입
                     table1.cell(3,0).text = '평가 책임자'
                     insert_signature_to_cell(table1.cell(3,1), manager_name, date_only_str, manager_canvas.image_data)
                     table1.cell(3,2).text = '참여 근로자'
@@ -388,7 +382,6 @@ if check_password():
                     table4.cell(4,1).text = c_data.get("legal_basis", "")
                     table4.cell(4,1).merge(table4.cell(4,3))
                     
-                    # 2. 위험성 판단 기준 하단 근로자 서명 삽입
                     table4.cell(5,0).merge(table4.cell(5,3))
                     insert_signature_to_cell(table4.cell(5,0), worker_name, date_only_str, worker_canvas.image_data, is_horizontal=True)
                     
@@ -441,7 +434,6 @@ if check_password():
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
                         
-                        # 3. 각 위험성 평가 항목에 평가 책임자(담당자) 서명 삽입
                         insert_signature_to_cell(row[6], manager_name, date_only_str, manager_canvas.image_data)
                         
                     format_table(table5)
@@ -455,7 +447,6 @@ if check_password():
                     hdr6 = table6.rows[0].cells
                     hdr6[0].text, hdr6[1].text, hdr6[2].text = '공유 일시', '공유한 사람 (책임자)', '참석자 서명 (근로자)'
                     
-                    # 4. TBM 공유 서명 내역 추가
                     row6 = table6.add_row().cells
                     row6[0].text = current_time_str
                     insert_signature_to_cell(row6[1], manager_name, "", manager_canvas.image_data)
