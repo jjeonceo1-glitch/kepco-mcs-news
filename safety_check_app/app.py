@@ -28,22 +28,18 @@ except Exception:
     st.set_page_config(page_title="한전MCS AI 위험성평가", page_icon="⚡", layout="centered")
 
 # ==========================================
-# (수정) 스마트폰 전용 아이콘 <head> 영역 강제 주입
+# 스마트폰 전용 아이콘 <head> 영역 강제 주입
 # ==========================================
 app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
 
 components.html(f"""
 <script>
-    // Streamlit 프레임의 부모 문서(전체 화면)를 선택
     const parentDoc = window.parent.document;
-    
-    // 기존 아이콘 태그가 있다면 제거 (충돌 방지)
     const oldApple = parentDoc.querySelector('link[rel="apple-touch-icon"]');
     if(oldApple) oldApple.remove();
     const oldAndroid = parentDoc.querySelector('link[rel="icon"][sizes="192x192"]');
     if(oldAndroid) oldAndroid.remove();
 
-    // 새 아이콘 태그를 생성하여 <head>에 직접 꽂아넣기
     const appleIcon = parentDoc.createElement('link');
     appleIcon.rel = 'apple-touch-icon';
     appleIcon.href = '{app_icon_url}';
@@ -78,7 +74,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. 문서 서식 자동화 함수
+# 3. 문서 서식 자동화 및 이미지 최적화 함수
 # ==========================================
 def apply_cell_shading(cell, color="D9D9D9"):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -99,6 +95,22 @@ def format_table(table, is_header_top=True):
     if is_header_top and len(table.rows) > 0:
         for cell in table.rows[0].cells:
             apply_cell_shading(cell, "D9D9D9")
+
+# 서버 부하 방지용 이미지 자동 압축 함수 추가
+def compress_image(uploaded_file, max_size=(1024, 1024), quality=80):
+    img = Image.open(uploaded_file)
+    img = ImageOps.exif_transpose(img) 
+    
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+        
+    img.thumbnail(max_size) 
+    
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=quality, optimize=True)
+    buf.seek(0)
+    
+    return Image.open(buf)
 
 # ==========================================
 # 4. 보안 로그인 함수
@@ -130,7 +142,7 @@ if check_password():
     try:
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("models/gemini-3.8-flash")
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
@@ -144,7 +156,8 @@ if check_password():
         st.markdown("**1단계:** 본문의 📍[위치 수집] 버튼을 눌러 현장 주소를 불러옵니다.  \n**2단계:** 점검할 현장의 사진을 1장 업로드합니다.  \n**3단계:** [평가표 작성 시작] 버튼을 누릅니다.  \n**4단계:** 분석이 끝나면 워드(.docx) 파일을 다운로드합니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
-        st.caption("© 2027 한전MCS.All rights reserved.")
+        st.caption("© 2026 한전MCS. All rights reserved.")
+        
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode()
@@ -185,13 +198,12 @@ if check_password():
     uploaded_file = st.file_uploader("Tip: 사진에 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        image = ImageOps.exif_transpose(image)
+        # 업로드된 이미지를 즉시 압축 처리
+        image = compress_image(uploaded_file)
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            image.thumbnail((800, 800))
-            st.image(image, caption="업로드된 현장 사진", use_container_width=True)
+            st.image(image, caption="업로드된 현장 사진 (자동 최적화됨)", use_container_width=True)
             
         with col2:
             st.warning("⚠️ **주의:** 사진이 흐리거나 너무 멀리서 찍힌 경우 위험 요소를 판독하기 어려울 수 있습니다.")
@@ -218,7 +230,7 @@ if check_password():
                           "current_measure": "현재 조치",
                           "level": "상, 중, 하 중 택 1",
                           "countermeasure": "감소대책",
-                          "location": {"x": 50, "y": 50} // ★ 추가됨: 사진 상의 위치 (x: 가로 백분율 0~100, y: 세로 백분율 0~100)
+                          "location": {"x": 50, "y": 50} 
                         }
                       ],
                       "tbm": ["작업 전 공유(TBM) 사항 1", "작업 전 공유(TBM) 사항 2"]
@@ -260,7 +272,6 @@ if check_password():
                         subtitle = doc.add_paragraph('사업장 위험성평가에 관한 지침(고용노동부고시 제2024-76호)의 절차를 따름')
                         subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
                         
-                        # --- 1. 평가표 헤더 ---
                         table1 = doc.add_table(rows=4, cols=4)
                         table1.style = 'Table Grid'
                         table1.cell(0,0).text, table1.cell(0,1).text = '사업장', '[          지점]'
@@ -277,7 +288,6 @@ if check_password():
                             apply_cell_shading(table1.cell(r, 2), "D9D9D9")
                         doc.add_paragraph()
                         
-                        # --- 2. 절차 ---
                         doc.add_heading('1. 사업장 위험성 평가 절차', level=2)
                         table2 = doc.add_table(rows=7, cols=3)
                         table2.style = 'Table Grid'
@@ -292,7 +302,6 @@ if check_password():
                         format_table(table2)
                         doc.add_paragraph("※ 매월 1회 이상 위험개소 순회점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
                         
-                        # --- 3. 법적 의무 ---
                         doc.add_heading('2. 법적 의무', level=2)
                         table3 = doc.add_table(rows=4, cols=4)
                         table3.style = 'Table Grid'
@@ -304,7 +313,6 @@ if check_password():
                         format_table(table3)
                         doc.add_paragraph("※ 과태료 시행 : 상시 50명 이상(건설업은 공사 금액 50억원 이상) 2027년 1월 1일 시행(산업안전보건법 부칙 제1조). 중대재해로 이어질 수 있는 위험은 작업 전 안전점검회의(TBM) 등을 통해 상시 알리도록 노력해야 합니다(제36조 제4항 후단).")
                         
-                        # --- 4. 위험성 수준 기준 ---
                         doc.add_heading('3. 위험성 수준 기준(AI 기준)', level=2)
                         table4 = doc.add_table(rows=6, cols=4)
                         table4.style = 'Table Grid'
@@ -327,16 +335,14 @@ if check_password():
                         apply_cell_shading(table4.cell(5, 0), "D9D9D9")
                         doc.add_page_break()
 
-                        # --- 4. 참고 사진 (위험요인 좌표 시각화) ---
                         doc.add_heading('4. AI 판독', level=2)
                         doc.add_paragraph("※ 사진에 표시된 붉은색 원과 번호는 위 '위험성 평가표'의 번호와 일치합니다.")
 
-                        # 원본 이미지 복사 및 크기 조절 (문서 용량 최적화를 위해 800px로 축소)
                         annotated_img = image.copy().convert("RGB")
                         annotated_img.thumbnail((800, 800))
                         draw = ImageDraw.Draw(annotated_img)
                         img_w, img_h = annotated_img.size
-                        r = 25 # 빨간색 동그라미 반지름
+                        r = 25 
 
                         for item in hazards:
                             no_str = str(item.get("no", ""))
@@ -346,30 +352,23 @@ if check_password():
                                 x_pct = float(loc.get("x", 50))
                                 y_pct = float(loc.get("y", 50))
                             except:
-                                x_pct, y_pct = 50, 50 # 좌표 획득 실패 시 중앙으로 표시
+                                x_pct, y_pct = 50, 50 
     
-                            # 백분율을 실제 픽셀 좌표로 변환
                             cx = (x_pct * img_w) / 100
                             cy = (y_pct * img_h) / 100
     
-                            # 1. 붉은색 굵은 원 그리기
                             draw.ellipse([cx-r, cy-r, cx+r, cy+r], outline="red", width=4)
-                            # 2. 번호 배경용 작은 붉은 사각형 (시인성 확보)
                             draw.rectangle([cx-9, cy-9, cx+9, cy+9], fill="red")
-                            # 3. 텍스트(번호) 표시 (가운데 정렬)
                             draw.text((cx-4, cy-6), no_str, fill="white")
     
-                        # 그려진 이미지를 워드 파일에 넣기 위해 버퍼에 임시 저장
                         img_buffer = io.BytesIO()
                         annotated_img.save(img_buffer, format="JPEG", quality=85)
                         img_buffer.seek(0)
 
-                        # 워드 문서에 사진 삽입 및 가운데 정렬
                         img_para = doc.add_paragraph()
                         img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        img_para.add_run().add_picture(img_buffer, width=Mm(150)) # 여백에 맞게 너비 150mm 고정
+                        img_para.add_run().add_picture(img_buffer, width=Mm(150)) 
                         
-                        # --- 4-1. 위험성 평가표 ---
                         doc.add_heading('4-1. 위험성 평가표(AI 분석)', level=2)
                         table5 = doc.add_table(rows=1, cols=7)
                         table5.style = 'Table Grid'
@@ -387,7 +386,6 @@ if check_password():
                             row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
                         format_table(table5)
                         
-                        # --- 6. 안전점검회의(TBM) 공유 ---
                         doc.add_heading('5. 안전점검회의(TBM) 공유', level=2)
                         for i, tbm_text in enumerate(data.get("tbm", [])):
                             doc.add_paragraph(f"{i+1}. {tbm_text}")
