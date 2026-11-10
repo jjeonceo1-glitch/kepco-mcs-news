@@ -142,7 +142,7 @@ if check_password():
     try:
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("models/gemini-3.8-flash")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
