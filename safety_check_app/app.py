@@ -30,7 +30,7 @@ except Exception:
 # ==========================================
 # 스마트폰 전용 아이콘 <head> 영역 강제 주입
 # ==========================================
-app_icon_url = "https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png"
+app_icon_url = "https://raw.githubusercontent.com/kepcomcs-jeon/kepco-mcs-news/main/safety_check_app/app_icon.png"
 
 components.html(f"""
 <script>
