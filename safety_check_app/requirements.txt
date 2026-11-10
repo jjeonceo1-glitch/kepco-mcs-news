@@ -7,3 +7,6 @@ streamlit-geolocation
 geopy
 pytz
 python-docx
+google-generativeai>=0.7.0
+streamlit-drawable-canvas
+numpy
