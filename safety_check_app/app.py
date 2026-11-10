@@ -121,10 +121,8 @@ def insert_signature_to_cell(cell, name, date_str, canvas_image_data, is_horizon
         p.add_run(f"{name}\n{date_str}\n")
         
     if canvas_image_data is not None:
-        # ★ 수정됨: 워드 오류를 막기 위해 RGBA를 호환성 높은 RGB로 변환하여 JPEG로 삽입
         img = Image.fromarray(canvas_image_data.astype('uint8'), 'RGBA')
         img = img.convert("RGB")
-        
         img_buffer = io.BytesIO()
         img.save(img_buffer, format="JPEG") 
         img_buffer.seek(0)
@@ -171,7 +169,7 @@ if check_password():
             st.title("한전MCS 안전재난부")
         st.divider()
         st.header("📌 사용 방법")
-        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 평가자와 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
+        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
         st.caption("© 2026 한전MCS. All rights reserved.")
@@ -223,28 +221,17 @@ if check_password():
     st.divider()
     
     # ==========================================
-    # ✍️ 서명 패드 (UI 및 사이즈 최적화)
+    # ✍️ 서명 패드 (근로자 전용으로 축소)
     # ==========================================
-    st.subheader("✍️ 3단계: 담당자 및 근로자 서명")
-    st.info("아래 패드에 직접 서명해 주세요. 작성된 서명은 모든 문서 란에 자동 적용됩니다.")
-    col_sig1, col_sig2 = st.columns(2)
+    st.subheader("✍️ 3단계: 참여 근로자 서명")
+    st.info("아래 패드에 참여 근로자의 서명을 직접 입력해 주세요. (평가 책임자는 출력 후 수기 서명)")
     
-    with col_sig1:
-        manager_name = st.text_input("평가 책임자(담당자) 성명", placeholder="이름 입력")
-        st.markdown("**평가 책임자 서명**")
-        # ★ 수정됨: 강제 늘림 CSS를 삭제하고 모바일에 맞게 내부 픽셀 150px로 고정 (좌표 왜곡 방지)
-        manager_canvas = st_canvas(
-            stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
-            height=150, width=150, drawing_mode="freedraw", key="manager_sign"
-        )
-        
-    with col_sig2:
-        worker_name = st.text_input("참여 근로자 성명", placeholder="이름 입력")
-        st.markdown("**참여 근로자 서명**")
-        worker_canvas = st_canvas(
-            stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
-            height=150, width=150, drawing_mode="freedraw", key="worker_sign"
-        )
+    worker_name = st.text_input("참여 근로자 성명", placeholder="이름 입력")
+    st.markdown("**참여 근로자 서명**")
+    worker_canvas = st_canvas(
+        stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
+        height=150, width=150, drawing_mode="freedraw", key="worker_sign"
+    )
 
     st.divider()
 
@@ -254,8 +241,8 @@ if check_password():
     if st.button("🚀 4단계: 위험성평가 작성 시작", type="primary", use_container_width=True):
         if image is None:
             st.error("현장 사진을 먼저 업로드해 주세요.")
-        elif not manager_name or not worker_name:
-            st.error("평가 책임자와 참여 근로자의 성명을 모두 입력해 주세요.")
+        elif not worker_name:
+            st.error("참여 근로자의 성명을 입력해 주세요.")
         else:
             with st.spinner("AI가 산업안전보건법령을 검토하고 문서를 조립 중입니다..."):
                 prompt = """
@@ -332,7 +319,7 @@ if check_password():
                     table1.cell(2,2).text, table1.cell(2,3).text = '평가 결과', f'{total_count}건, 상 {count_high}·중 {count_mid}·하 {count_low}'
                     
                     table1.cell(3,0).text = '평가 책임자'
-                    insert_signature_to_cell(table1.cell(3,1), manager_name, date_only_str, manager_canvas.image_data)
+                    table1.cell(3,1).text = '\n\n          (서명)' # 수기 서명란 복구
                     table1.cell(3,2).text = '참여 근로자'
                     insert_signature_to_cell(table1.cell(3,3), worker_name, date_only_str, worker_canvas.image_data)
                     
@@ -434,7 +421,7 @@ if check_password():
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
                         
-                        insert_signature_to_cell(row[6], manager_name, date_only_str, manager_canvas.image_data)
+                        row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)' # 수기 서명란 복구
                         
                     format_table(table5)
                     
@@ -449,7 +436,7 @@ if check_password():
                     
                     row6 = table6.add_row().cells
                     row6[0].text = current_time_str
-                    insert_signature_to_cell(row6[1], manager_name, "", manager_canvas.image_data)
+                    row6[1].text = '\n\n          (서명)' # 수기 서명란 복구
                     insert_signature_to_cell(row6[2], worker_name, "", worker_canvas.image_data)
                     
                     format_table(table6)
