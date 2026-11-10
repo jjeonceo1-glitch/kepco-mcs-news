@@ -116,7 +116,7 @@ def insert_signature_to_cell(cell, name, date_str, canvas_image_data, is_horizon
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     if is_horizontal:
-        p.add_run(f"위 판독 기준으로 정함.     근로자: {name}  ")
+        p.add_run(f"위 판독 기준으로 정함.     참여 근로자: {name}  ")
     else:
         p.add_run(f"{name}\n{date_str}\n")
         
@@ -141,11 +141,11 @@ def check_password():
 
     if "password_correct" not in st.session_state:
         st.markdown("### 🔒 한전MCS 안전점검 시스템")
-        st.text_input("관리자 비밀번호 4자리를 입력하세요", type="password", on_change=password_entered, key="password")
+        st.text_input("앱 비밀번호 4자리를 입력하세요", type="password", on_change=password_entered, key="password")
         return False
     elif not st.session_state["password_correct"]:
         st.markdown("### 🔒 한전MCS 안전점검 시스템")
-        st.text_input("관리자 비밀번호 4자리를 입력하세요", type="password", on_change=password_entered, key="password")
+        st.text_input("앱 비밀번호 4자리를 입력하세요", type="password", on_change=password_entered, key="password")
         st.error("비밀번호가 일치하지 않습니다. 다시 시도해 주세요.")
         return False
     else:
@@ -169,10 +169,10 @@ if check_password():
             st.title("한전MCS 안전재난부")
         st.divider()
         st.header("📌 사용 방법")
-        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
+        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 촬영하거나 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
-        st.caption("© 2026 한전MCS. All rights reserved.")
+        st.caption("© 2027 한전MCS. All rights reserved.")
         
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
@@ -187,7 +187,7 @@ if check_password():
         st.title("AI 위험성평가")
 
     st.markdown("■ 고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 평가 책임자가 직접 재확인해야 합니다.")
+    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 관리자가 직접 재확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
@@ -208,21 +208,40 @@ if check_password():
     
     st.divider()
 
-    st.subheader("📸 2단계: 현장 사진 업로드")
-    uploaded_file = st.file_uploader("Tip: 사진에 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.", type=["jpg", "jpeg", "png"])
+    # ==========================================
+    # 📸 카메라 촬영 기능 추가 (UI 개선)
+    # ==========================================
+    st.subheader("📸 2단계: 현장 사진 입력")
+    st.info("위험장소를 촬영하거나 기존 사진을 업로드해 주세요.")
+    
+    # 탭을 활용하여 카메라 촬영과 갤러리 업로드를 분리
+    tab_camera, tab_gallery = st.tabs(["📷 카메라로 즉시 촬영", "📁 갤러리에서 사진 선택"])
+    
+    uploaded_file = None
+    
+    with tab_camera:
+        camera_file = st.camera_input("현장 사진 촬영")
+        if camera_file is not None:
+            uploaded_file = camera_file
+            
+    with tab_gallery:
+        gallery_file = st.file_uploader("Tip: 주요 설비가 잘 보일수록 AI가 더 정확히 판독합니다.", type=["jpg", "jpeg", "png"])
+        if gallery_file is not None:
+            uploaded_file = gallery_file
+
     image = None
     if uploaded_file is not None:
         image = compress_image(uploaded_file)
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.image(image, caption="업로드된 현장 사진 (자동 최적화됨)", use_container_width=True)
+            st.image(image, caption="적용된 현장 사진", use_container_width=True)
         with col2:
             st.warning("⚠️ **주의:** 사진이 흐리거나 너무 멀리서 찍힌 경우 위험 요소를 판독하기 어려울 수 있습니다.")
             
     st.divider()
     
     # ==========================================
-    # ✍️ 서명 패드 (옵션 추가됨)
+    # ✍️ 서명 패드
     # ==========================================
     st.subheader("✍️ 3단계: 참여 근로자 서명")
     st.info("아래 패드에 참여 근로자의 서명을 직접 입력해 주세요. (평가 책임자는 출력 후 수기 서명)")
@@ -230,7 +249,6 @@ if check_password():
     worker_name = st.text_input("참여 근로자 성명", placeholder="이름 입력")
     st.markdown("**참여 근로자 서명**")
     
-    # ★ 수정됨: return_image_data=True 속성을 추가하여 데이터 반환을 명시적으로 활성화
     worker_canvas = st_canvas(
         stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
         height=150, width=150, drawing_mode="freedraw", key="worker_sign",
@@ -244,7 +262,7 @@ if check_password():
     # ==========================================
     if st.button("🚀 4단계: 위험성평가 작성 시작", type="primary", use_container_width=True):
         if image is None:
-            st.error("현장 사진을 먼저 업로드해 주세요.")
+            st.error("현장 사진을 카메라로 촬영하거나 파일로 업로드해 주세요.")
         elif not worker_name:
             st.error("참여 근로자의 성명을 입력해 주세요.")
         else:
@@ -424,7 +442,8 @@ if check_password():
                         row[3].text = item.get("current_measure", "")
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
-                        row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
+                        
+                        insert_signature_to_cell(row[6], worker_name, date_only_str, worker_canvas.image_data)
                         
                     format_table(table5)
                     
