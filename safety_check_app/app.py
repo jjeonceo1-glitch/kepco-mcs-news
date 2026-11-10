@@ -169,7 +169,7 @@ if check_password():
             st.title("한전MCS 안전재난부")
         st.divider()
         st.header("📌 사용 방법")
-        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 촬영하거나 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
+        st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
         st.caption("© 2027 한전MCS. All rights reserved.")
@@ -208,33 +208,14 @@ if check_password():
     
     st.divider()
 
-    # ==========================================
-    # 📸 카메라 촬영 기능 추가 (UI 개선)
-    # ==========================================
-    st.subheader("📸 2단계: 현장 사진 입력")
-    st.info("위험장소를 촬영하거나 기존 사진을 업로드해 주세요.")
-    
-    # 탭을 활용하여 카메라 촬영과 갤러리 업로드를 분리
-    tab_camera, tab_gallery = st.tabs(["📷 카메라로 즉시 촬영", "📁 갤러리에서 사진 선택"])
-    
-    uploaded_file = None
-    
-    with tab_camera:
-        camera_file = st.camera_input("현장 사진 촬영")
-        if camera_file is not None:
-            uploaded_file = camera_file
-            
-    with tab_gallery:
-        gallery_file = st.file_uploader("Tip: 주요 설비가 잘 보일수록 AI가 더 정확히 판독합니다.", type=["jpg", "jpeg", "png"])
-        if gallery_file is not None:
-            uploaded_file = gallery_file
-
+    st.subheader("📸 2단계: 현장 사진 업로드")
+    uploaded_file = st.file_uploader("Tip: 사진에 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.", type=["jpg", "jpeg", "png"])
     image = None
     if uploaded_file is not None:
         image = compress_image(uploaded_file)
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.image(image, caption="적용된 현장 사진", use_container_width=True)
+            st.image(image, caption="업로드된 현장 사진 (자동 최적화됨)", use_container_width=True)
         with col2:
             st.warning("⚠️ **주의:** 사진이 흐리거나 너무 멀리서 찍힌 경우 위험 요소를 판독하기 어려울 수 있습니다.")
             
@@ -262,7 +243,7 @@ if check_password():
     # ==========================================
     if st.button("🚀 4단계: 위험성평가 작성 시작", type="primary", use_container_width=True):
         if image is None:
-            st.error("현장 사진을 카메라로 촬영하거나 파일로 업로드해 주세요.")
+            st.error("현장 사진을 먼저 업로드해 주세요.")
         elif not worker_name:
             st.error("참여 근로자의 성명을 입력해 주세요.")
         else:
@@ -363,7 +344,7 @@ if check_password():
                     table2.cell(5,0).text, table2.cell(5,1).text, table2.cell(5,2).text = '마. 공유(제13조)', '작업 전 위험요인과 감소대책을 공유', '작업 전 안전점검회의(TBM)에서 공유하고 서명'
                     table2.cell(6,0).text, table2.cell(6,1).text, table2.cell(6,2).text = '바. 기록·보존(제14조)', '본 문서', '서명한 본 문서를 보관'
                     format_table(table2)
-                    doc.add_paragraph("※ 매월 1회 이상 위험개소 순회점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
+                    doc.add_paragraph("※ 매월 1회 이상 위험개소 점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
                     
                     doc.add_heading('2. 법적 의무', level=2)
                     table3 = doc.add_table(rows=4, cols=4)
@@ -443,6 +424,7 @@ if check_password():
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
                         
+                        # ★ 수정됨: 각 위험 요인 항목의 '담당 완료일' 셀에 근로자 성명, 서명, 날짜를 자동 삽입
                         insert_signature_to_cell(row[6], worker_name, date_only_str, worker_canvas.image_data)
                         
                     format_table(table5)
