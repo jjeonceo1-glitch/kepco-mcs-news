@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <!-- 모바일 화면 크기에 딱 맞추고 확대/축소 방지 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>위험성평가 AI</title>
+
+    <!-- 한전MCS 전용 아이콘 강제 적용 -->
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png">
+    <link rel="icon" sizes="192x192" href="https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png">
+    <link rel="shortcut icon" href="https://raw.githubusercontent.com/jjeonceo1-glitch/kepco-mcs-news/main/safety_check_app/app_icon.png">
+
+    <style>
+        /* 테두리나 여백 없이 스마트폰 화면 전체를 앱으로 채우기 */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #ffffff; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <!-- 앱 실제 주소 연결 (여백 제거 옵션 포함) -->
+    <iframe src="https://kepcomcs-safety.streamlit.app/?embed=true" allow="geolocation"></iframe>
+</body>
+</html>
