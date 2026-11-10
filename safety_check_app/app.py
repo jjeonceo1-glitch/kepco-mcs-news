@@ -172,7 +172,7 @@ if check_password():
         st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
-        st.caption("© 2027 한전MCS. All rights reserved.")
+        st.caption("© 2026 한전MCS. All rights reserved.")
         
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
@@ -187,7 +187,7 @@ if check_password():
         st.title("AI 위험성평가")
 
     st.markdown("■ 고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
-    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 관리자가 직접 재확인해야 합니다.")
+    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 평가 책임자가 직접 재확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
@@ -222,16 +222,19 @@ if check_password():
     st.divider()
     
     # ==========================================
-    # ✍️ 서명 패드 (근로자 전용으로 축소)
+    # ✍️ 서명 패드 (옵션 추가됨)
     # ==========================================
     st.subheader("✍️ 3단계: 참여 근로자 서명")
     st.info("아래 패드에 참여 근로자의 서명을 직접 입력해 주세요. (평가 책임자는 출력 후 수기 서명)")
     
     worker_name = st.text_input("참여 근로자 성명", placeholder="이름 입력")
     st.markdown("**참여 근로자 서명**")
+    
+    # ★ 수정됨: return_image_data=True 속성을 추가하여 데이터 반환을 명시적으로 활성화
     worker_canvas = st_canvas(
         stroke_width=3, stroke_color="#000", background_color="#f0f2f6",
-        height=150, width=150, drawing_mode="freedraw", key="worker_sign"
+        height=150, width=150, drawing_mode="freedraw", key="worker_sign",
+        return_image_data=True
     )
 
     st.divider()
@@ -320,7 +323,7 @@ if check_password():
                     table1.cell(2,2).text, table1.cell(2,3).text = '평가 결과', f'{total_count}건, 상 {count_high}·중 {count_mid}·하 {count_low}'
                     
                     table1.cell(3,0).text = '평가 책임자'
-                    table1.cell(3,1).text = '\n\n          (서명)' # 수기 서명란 복구
+                    table1.cell(3,1).text = '\n\n          (서명)'
                     table1.cell(3,2).text = '참여 근로자'
                     insert_signature_to_cell(table1.cell(3,3), worker_name, date_only_str, worker_canvas.image_data)
                     
@@ -334,7 +337,7 @@ if check_password():
                     table2 = doc.add_table(rows=7, cols=3)
                     table2.style = 'Table Grid'
                     hdr2 = table2.rows[0].cells
-                    hdr2[0].text, hdr2[1].text, hdr2[2].text = '절차', 'AI 판독', '관리자 확인'
+                    hdr2[0].text, hdr2[1].text, hdr2[2].text = '절차', 'AI 판독', '평가 책임자 확인'
                     table2.cell(1,0).text, table2.cell(1,1).text, table2.cell(1,2).text = '가. 사전준비(제9조)', '위험성 수준 기준 기본안', '위험성의 수준과 그 수준을 판단하는 기준, 허용 가능한 위험성의 수준을 확정(제2항)'
                     table2.cell(2,0).text, table2.cell(2,1).text, table2.cell(2,2).text = '나. 유해·위험요인 파악(제10조)', f'현장점검(제10조 제1호)간 첨부된 사진에서 {total_count}건', '사진에 포함되지 않은 현장 위험물(화학물질·소음·중량물 등)과 근로자가 제안한 위험요인도 추가하여 파악'
                     table2.cell(3,0).text, table2.cell(3,1).text, table2.cell(3,2).text = '다. 위험성 결정(제11조)', '상·중·하 수준으로 분류', '허용 가능한지 결정, 현장 근로자 참여(제6조)'
@@ -421,8 +424,7 @@ if check_password():
                         row[3].text = item.get("current_measure", "")
                         row[4].text = item.get("level", "")
                         row[5].text = item.get("countermeasure", "")
-                        
-                        row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)' # 수기 서명란 복구
+                        row[6].text = '담당자\n\n완료일\n\n년  월  일\n(서명)'
                         
                     format_table(table5)
                     
@@ -433,11 +435,11 @@ if check_password():
                     table6 = doc.add_table(rows=1, cols=3)
                     table6.style = 'Table Grid'
                     hdr6 = table6.rows[0].cells
-                    hdr6[0].text, hdr6[1].text, hdr6[2].text = '공유 일시', '공유한 사람 (책임자)', '참석자 서명 (근로자)'
+                    hdr6[0].text, hdr6[1].text, hdr6[2].text = '공유 일시', '공유한 사람 (평가 책임자)', '참석자 서명 (근로자)'
                     
                     row6 = table6.add_row().cells
                     row6[0].text = current_time_str
-                    row6[1].text = '\n\n          (서명)' # 수기 서명란 복구
+                    row6[1].text = '\n\n          (서명)'
                     insert_signature_to_cell(row6[2], worker_name, "", worker_canvas.image_data)
                     
                     format_table(table6)
