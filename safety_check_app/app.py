@@ -158,7 +158,7 @@ if check_password():
     try:
         API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("models/gemini-3.8-flash")
     except Exception as e:
         st.error(f"GEMINI_API_KEY 설정 오류: {e}")
 
@@ -172,7 +172,7 @@ if check_password():
         st.markdown("**1단계:** 현장 주소를 불러옵니다.  \n**2단계:** 현장 사진을 1장 업로드합니다.  \n**3단계:** 참여 근로자 서명을 기입합니다. \n**4단계:** [평가표 작성 시작] 버튼을 누릅니다.")
         st.divider()
         st.info("💡 **Tip:** 사진에 작업자의 행동이나 주요 설비(전신주, 개구부 등)가 잘 보일수록 AI가 더 정확한 법적 근거를 찾아냅니다.")
-        st.caption("© 2026 한전MCS. All rights reserved.")
+        st.caption("© 2027 한전MCS. All rights reserved.")
         
     try:
         with open("safety_check_app/logo.png", "rb") as image_file:
@@ -187,6 +187,7 @@ if check_password():
         st.title("AI 위험성평가")
 
     st.markdown("■ 고용노동부 고시 제2024-76호 지침에 따른 **위험성평가**를 지원합니다.")
+    st.markdown("■ 본 AI 위험성평가는 근로자의 안전을 위한 지원 프로그램이며, 관리자가 직접 재확인해야 합니다.")
     st.divider()
 
     st.subheader("📍 1단계: 현장 위치 수집")
