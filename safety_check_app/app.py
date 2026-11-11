@@ -344,7 +344,7 @@ if check_password():
                     table2.cell(5,0).text, table2.cell(5,1).text, table2.cell(5,2).text = '마. 공유(제13조)', '작업 전 위험요인과 감소대책을 공유', '작업 전 안전점검회의(TBM)에서 공유하고 서명'
                     table2.cell(6,0).text, table2.cell(6,1).text, table2.cell(6,2).text = '바. 기록·보존(제14조)', '본 문서', '서명한 본 문서를 보관'
                     format_table(table2)
-                    doc.add_paragraph("※ 평가 책임자는 제10조의 사업장 순회점검 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
+                    doc.add_paragraph("※ 평가 책임자는 제10조의 사업장 순회점검을 통해 유해·위험요인을 발굴하여 제11조의 위험성 결정 및 제12조의 위험성 감소대책을 수립·실행 할 것.(사업장 위험성 평가에 관한 지침 제15조 제4항)")
                     
                     doc.add_heading('2. 법적 의무', level=2)
                     table3 = doc.add_table(rows=4, cols=4)
